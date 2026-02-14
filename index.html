@@ -337,25 +337,65 @@
     function getNextLevel(xp) { for (const l of LEVELS) { if (xp < l.minXP) return l; } return null; }
     function getLevelProgress(xp) { const c = getLevel(xp), n = getNextLevel(xp); if (!n) return 100; return Math.round(((xp - c.minXP) / (n.minXP - c.minXP)) * 100); }
 
-    // ─── PERSISTENCE ──────────────────────────────────────────────────────────────
+    // ─── PERSISTENCE (multi-profile) ───────────────────────────────────────────
 
-    const SAVE_KEY = "kickquest_save";
+    const SAVE_KEY = "drillsquest_profiles";
 
-    function loadSave() {
+    function loadAllProfiles() {
       try {
         const raw = localStorage.getItem(SAVE_KEY);
-        if (!raw) return null;
-        return JSON.parse(raw);
-      } catch(e) { return null; }
+        if (!raw) return {};
+        const data = JSON.parse(raw);
+        // Migrate old single-profile save
+        if (data.playerName) {
+          const profiles = {};
+          profiles[data.playerName] = data;
+          try { localStorage.setItem(SAVE_KEY, JSON.stringify(profiles)); } catch(e) {}
+          return profiles;
+        }
+        return data;
+      } catch(e) { return {}; }
     }
 
-    function writeSave(data) {
-      try { localStorage.setItem(SAVE_KEY, JSON.stringify(data)); } catch(e) {}
+    function loadProfile(name) {
+      var profiles = loadAllProfiles();
+      return profiles[name] || null;
     }
 
-    function clearSave() {
-      try { localStorage.removeItem(SAVE_KEY); } catch(e) {}
+    function writeProfile(name, data) {
+      try {
+        var profiles = loadAllProfiles();
+        profiles[name] = data;
+        localStorage.setItem(SAVE_KEY, JSON.stringify(profiles));
+      } catch(e) {}
     }
+
+    function deleteProfile(name) {
+      try {
+        var profiles = loadAllProfiles();
+        delete profiles[name];
+        localStorage.setItem(SAVE_KEY, JSON.stringify(profiles));
+      } catch(e) {}
+    }
+
+    // Also migrate old save key if it exists
+    function migrateOldSave() {
+      try {
+        var old = localStorage.getItem("kickquest_save");
+        if (old) {
+          var data = JSON.parse(old);
+          if (data && data.playerName) {
+            var profiles = loadAllProfiles();
+            if (!profiles[data.playerName]) {
+              profiles[data.playerName] = data;
+              localStorage.setItem(SAVE_KEY, JSON.stringify(profiles));
+            }
+            localStorage.removeItem("kickquest_save");
+          }
+        }
+      } catch(e) {}
+    }
+    migrateOldSave();
 
     function getToday() {
       return new Date().toISOString().slice(0, 10);
@@ -391,23 +431,20 @@
     // ─── MAIN APP ────────────────────────────────────────────────────────────────
 
     function DrillsQuest() {
-      const saved = React.useMemo(() => loadSave(), []);
-      const hasReturning = saved && saved.playerName;
-
       const [screen, setScreen] = useState("splash");
       const [tab, setTab] = useState("home");
-      const [playerName, setPlayerName] = useState(hasReturning ? saved.playerName : "");
+      const [playerName, setPlayerName] = useState("");
       const [nameInput, setNameInput] = useState("");
-      const [avatar, setAvatar] = useState(saved?.avatar || null);
-      const [team, setTeam] = useState(saved?.team || null);
-      const [xp, setXP] = useState(saved?.xp || 0);
-      const [completedDrills, setCompletedDrills] = useState(saved?.completedDrills || []);
-      const [streak, setStreak] = useState(() => saved ? calcStreak(saved.lastDate, saved.streak || 1) : 1);
-      const [lastDate, setLastDate] = useState(saved?.lastDate || null);
+      const [avatar, setAvatar] = useState(null);
+      const [team, setTeam] = useState(null);
+      const [xp, setXP] = useState(0);
+      const [completedDrills, setCompletedDrills] = useState([]);
+      const [streak, setStreak] = useState(1);
+      const [lastDate, setLastDate] = useState(null);
       const [selectedDrill, setSelectedDrill] = useState(null);
       const [categoryFilter, setCategoryFilter] = useState("All");
       const [settingFilter, setSettingFilter] = useState("Indoor");
-      const [unlockedBadges, setUnlockedBadges] = useState(saved?.unlockedBadges || []);
+      const [unlockedBadges, setUnlockedBadges] = useState([]);
       const [showComplete, setShowComplete] = useState(false);
       const [showLevelUp, setShowLevelUp] = useState(false);
       const [editingAvatar, setEditingAvatar] = useState(false);
@@ -420,19 +457,46 @@
       });
       const [skillTreeUnlocked, setSkillTreeUnlocked] = useState(["Ball Mastery", "Fitness"]);
 
+      // Load a profile into state
+      const loadPlayerProfile = useCallback((name) => {
+        var p = loadProfile(name);
+        setPlayerName(name);
+        if (p) {
+          setAvatar(p.avatar || null);
+          setTeam(p.team || null);
+          setXP(p.xp || 0);
+          setCompletedDrills(p.completedDrills || []);
+          setStreak(p.lastDate ? calcStreak(p.lastDate, p.streak || 1) : 1);
+          setLastDate(p.lastDate || null);
+          setUnlockedBadges(p.unlockedBadges || []);
+        } else {
+          setAvatar(null); setTeam(null); setXP(0); setCompletedDrills([]);
+          setStreak(1); setLastDate(null); setUnlockedBadges([]);
+        }
+      }, []);
+
+      // Log out — save current progress, go to profile picker
+      const logOut = useCallback(() => {
+        if (playerName) {
+          writeProfile(playerName, { avatar, team, xp, completedDrills, streak, lastDate, unlockedBadges });
+        }
+        setPlayerName(""); setAvatar(null); setTeam(null); setXP(0);
+        setCompletedDrills([]); setStreak(1); setLastDate(null); setUnlockedBadges([]);
+        setTab("home"); setSelectedDrill(null); setEditingAvatar(false);
+        setScreen("pick_player");
+      }, [playerName, avatar, team, xp, completedDrills, streak, lastDate, unlockedBadges]);
+
       // Save to localStorage whenever progress changes
       useEffect(() => {
         if (!playerName) return;
-        writeSave({ playerName, avatar, team, xp, completedDrills, streak, lastDate, unlockedBadges });
+        writeProfile(playerName, { avatar, team, xp, completedDrills, streak, lastDate, unlockedBadges });
       }, [playerName, avatar, team, xp, completedDrills, streak, lastDate, unlockedBadges]);
 
-      // Splash → skip name screen for returning players
+      // Splash → go to profile picker
       useEffect(() => {
         if (screen === "splash") {
           const t = setTimeout(() => {
-            if (hasReturning && saved?.avatar) setScreen("app");
-            else if (hasReturning) setScreen("avatar");
-            else setScreen("name");
+            setScreen("pick_player");
           }, 1800);
           return () => clearTimeout(t);
         }
@@ -482,6 +546,46 @@
         );
       }
 
+      // ─── WHO'S PLAYING? (profile picker) ──────────────
+      if (screen === "pick_player") {
+        const profiles = loadAllProfiles();
+        const profileNames = Object.keys(profiles);
+        return (
+          <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", padding: "48px 24px", background: WHITE, fontFamily: font }}>
+            <div style={{ marginBottom: 20 }}><Icon name="ball" size={40} color={ACCENT} sw={1.2} /></div>
+            <h1 style={{ fontSize: 24, fontWeight: 700, color: ACCENT, margin: "0 0 6px", letterSpacing: -0.5 }}>Who's playing?</h1>
+            <p style={{ fontSize: 13, color: GRAY, margin: "0 0 28px" }}>Pick your profile or create a new one</p>
+
+            {profileNames.length > 0 && (
+              <div style={{ width: "100%", maxWidth: 300, marginBottom: 24 }}>
+                {profileNames.map(name => {
+                  const p = profiles[name];
+                  const teamInfo = p.team ? TEAMS.find(t => t.id === p.team) : null;
+                  return (
+                    <div key={name} onClick={() => { playClick(); loadPlayerProfile(name); if (p.avatar) setScreen("app"); else setScreen("avatar"); }}
+                      style={{ display: "flex", alignItems: "center", gap: 14, padding: 14, marginBottom: 8, borderRadius: 14, border: `1px solid ${BORDER}`, background: WHITE, cursor: "pointer", transition: "all 0.2s" }}>
+                      <div style={{ width: 48, height: 48, borderRadius: 14, background: LIGHT, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", flexShrink: 0 }}>
+                        {p.avatar ? <PixelAvatar id={p.avatar} size={36} jersey={teamInfo?.primary} stripe={teamInfo?.secondary} /> : <Icon name="user" size={22} color={GRAY} />}
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: 16, fontWeight: 700, color: ACCENT }}>{name}</div>
+                        <div style={{ fontSize: 11, color: GRAY }}>{getLevel(p.xp || 0).name} - {p.xp || 0} XP</div>
+                      </div>
+                      <Icon name="arrow" size={18} color={BORDER} />
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            <button onClick={() => { playClick(); setNameInput(""); setScreen("name"); }}
+              style={{ padding: "14px 40px", fontSize: 15, fontWeight: 600, fontFamily: font, borderRadius: 100, border: "none", cursor: "pointer", background: ACCENT, color: WHITE, letterSpacing: 0.3 }}>
+              New Player
+            </button>
+          </div>
+        );
+      }
+
       // ─── NAME ──────────────────────────────────────────
       if (screen === "name") {
         return (
@@ -491,7 +595,7 @@
             <input
               type="text" value={nameInput} onChange={(e) => setNameInput(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter" && nameInput.trim()) { setPlayerName(nameInput.trim()); setScreen("avatar"); } }}
-              placeholder="Player name"
+              placeholder="First name"
               style={{ width: "100%", maxWidth: 260, padding: "16px 0", fontSize: 20, fontWeight: 600, fontFamily: font, border: "none", borderBottom: `2px solid ${BORDER}`, background: "transparent", color: ACCENT, outline: "none", textAlign: "center", transition: "border-color 0.2s" }}
               onFocus={(e) => e.target.style.borderBottomColor = ACCENT}
               onBlur={(e) => e.target.style.borderBottomColor = BORDER}
@@ -504,6 +608,12 @@
             >
               Start Training
             </button>
+            {Object.keys(loadAllProfiles()).length > 0 && (
+              <button onClick={() => { playClick(); setScreen("pick_player"); }}
+                style={{ marginTop: 16, background: "none", border: "none", cursor: "pointer", fontSize: 13, color: GRAY, fontFamily: font, fontWeight: 500 }}>
+                Back to profiles
+              </button>
+            )}
           </div>
         );
       }
@@ -1014,8 +1124,8 @@
                   </div>
 
                   <div style={{ textAlign: "center", marginTop: 8, display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
-                    <button onClick={() => { playClick(); setScreen("splash"); }} style={{ width: 200, padding: "12px 28px", fontSize: 14, fontWeight: 600, fontFamily: font, borderRadius: 100, border: "none", cursor: "pointer", background: ACCENT, color: WHITE }}>Log Out</button>
-                    <button onClick={() => { if (window.confirm("Are you sure? This will delete ALL your progress, XP, and badges. This cannot be undone!")) { playClick(); setXP(0); setCompletedDrills([]); setStreak(1); setUnlockedBadges([]); setLastDate(null); setAvatar(null); setTeam(null); setPlayerName(""); setEditingAvatar(false); clearSave(); setScreen("name"); } }} style={{ background: "none", border: `1px solid ${BORDER}`, borderRadius: 100, padding: "10px 28px", color: GRAY, fontSize: 12, fontWeight: 500, fontFamily: font, cursor: "pointer" }}>Reset all progress</button>
+                    <button onClick={() => { playClick(); logOut(); }} style={{ width: 200, padding: "12px 28px", fontSize: 14, fontWeight: 600, fontFamily: font, borderRadius: 100, border: "none", cursor: "pointer", background: ACCENT, color: WHITE }}>Switch Player</button>
+                    <button onClick={() => { if (window.confirm("Are you sure? This will delete ALL of " + playerName + "'s progress, XP, and badges. This cannot be undone!")) { playClick(); var n = playerName; deleteProfile(n); setXP(0); setCompletedDrills([]); setStreak(1); setUnlockedBadges([]); setLastDate(null); setAvatar(null); setTeam(null); setPlayerName(""); setEditingAvatar(false); setScreen("pick_player"); } }} style={{ background: "none", border: `1px solid ${BORDER}`, borderRadius: 100, padding: "10px 28px", color: GRAY, fontSize: 12, fontWeight: 500, fontFamily: font, cursor: "pointer" }}>Delete this player</button>
                   </div>
                 </div>
                 </div>
