@@ -483,7 +483,7 @@
       if (screen === "name") {
         return (
           <div style={{ height: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 32, background: WHITE, fontFamily: font }}>
-            <div style={{ marginBottom: 24 }}><Icon name="player" size={64} color={ACCENT} sw={2} /></div>
+            <div style={{ marginBottom: 32 }}><Icon name="ball" size={40} color={ACCENT} sw={1.2} /></div>
             <h1 style={{ fontSize: 24, fontWeight: 700, color: ACCENT, margin: "0 0 32px", letterSpacing: -0.5 }}>What's your name?</h1>
             <input
               type="text" value={nameInput} onChange={(e) => setNameInput(e.target.value)}
@@ -510,7 +510,7 @@
       if (screen === "avatar") {
         return (
           <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", padding: "40px 24px", background: WHITE, fontFamily: font, overflowY: "auto" }}>
-            <div style={{ marginBottom: 16 }}><Icon name="player" size={56} color={ACCENT} sw={2} /></div>
+            <div style={{ marginBottom: 16 }}><Icon name="ball" size={32} color={ACCENT} sw={1.2} /></div>
             <h1 style={{ fontSize: 24, fontWeight: 700, color: ACCENT, margin: "0 0 6px", letterSpacing: -0.5 }}>Pick your player</h1>
             <p style={{ fontSize: 13, color: GRAY, margin: "0 0 24px" }}>Choose your avatar</p>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 28, maxWidth: 280, width: "100%" }}>
