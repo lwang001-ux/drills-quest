@@ -406,6 +406,7 @@
       const [unlockedBadges, setUnlockedBadges] = useState(saved?.unlockedBadges || []);
       const [showComplete, setShowComplete] = useState(false);
       const [showLevelUp, setShowLevelUp] = useState(false);
+      const [editingAvatar, setEditingAvatar] = useState(false);
       const [newBadge, setNewBadge] = useState(null);
       const [lockedMsg, setLockedMsg] = useState(null);
       const [dailyChallenge] = useState(() => {
@@ -948,12 +949,49 @@
                   <button className="pill" onClick={() => { playClick(); setTab("home"); }} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, padding: "10px 0 0", color: GRAY, fontSize: 13, fontWeight: 500, fontFamily: font }}><Icon name="back" size={14} color={GRAY} sw={2} /> Home</button>
                   {/* Profile card */}
                   <div style={{ background: WHITE, borderRadius: 16, padding: 28, textAlign: "center", border: `1px solid ${BORDER}`, marginTop: 8, marginBottom: 24 }}>
-                    <div style={{ width: 80, height: 80, borderRadius: 20, background: LIGHT, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px", overflow: "hidden" }}>
+                    <div onClick={() => { playClick(); setEditingAvatar(!editingAvatar); }} style={{ width: 80, height: 80, borderRadius: 20, background: LIGHT, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px", overflow: "hidden", cursor: "pointer", position: "relative" }}>
                       {avatar ? <PixelAvatar id={avatar} size={56} jersey={teamData?.primary} stripe={teamData?.secondary} /> : <Icon name="user" size={28} color={ACCENT} />}
+                      <div style={{ position: "absolute", bottom: 0, right: 0, width: 22, height: 22, borderRadius: 11, background: ACCENT, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <span style={{ color: WHITE, fontSize: 12, fontWeight: 700, lineHeight: 1 }}>✎</span>
+                      </div>
                     </div>
                     <h2 style={{ fontSize: 22, fontWeight: 700, color: ACCENT, margin: "0 0 4px" }}>{playerName}</h2>
                     <span style={{ display: "inline-block", padding: "4px 14px", borderRadius: 100, background: LIGHT, fontSize: 12, fontWeight: 600, color: GRAY, letterSpacing: 0.5, textTransform: "uppercase" }}>{level.name}</span>
                     <div style={{ marginTop: 16, fontSize: 36, fontWeight: 700, color: ACCENT }}>{xp} <span style={{ fontSize: 14, fontWeight: 500, color: GRAY }}>XP</span></div>
+
+                    {editingAvatar && (
+                      <div style={{ marginTop: 20, borderTop: `1px solid ${BORDER}`, paddingTop: 20 }}>
+                        <p style={{ fontSize: 12, fontWeight: 600, color: GRAY, textTransform: "uppercase", letterSpacing: 1, margin: "0 0 12px" }}>Change Avatar</p>
+                        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, marginBottom: 20, maxWidth: 240, margin: "0 auto 20px" }}>
+                          {AVATAR_IDS.map(id => (
+                            <div key={id} onClick={() => { playClick(); setAvatar(id); }} style={{
+                              height: 56, borderRadius: 12, border: `2px solid ${avatar === id ? ACCENT : BORDER}`,
+                              background: avatar === id ? LIGHT : WHITE,
+                              display: "flex", alignItems: "center", justifyContent: "center",
+                              cursor: "pointer", transition: "all 0.2s",
+                            }}>
+                              <PixelAvatar id={id} size={32} jersey={teamData?.primary} stripe={teamData?.secondary} />
+                            </div>
+                          ))}
+                        </div>
+                        <p style={{ fontSize: 12, fontWeight: 600, color: GRAY, textTransform: "uppercase", letterSpacing: 1, margin: "0 0 12px" }}>Change Team</p>
+                        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6, maxWidth: 280, margin: "0 auto" }}>
+                          {TEAMS.map(t => (
+                            <div key={t.id} onClick={() => { playClick(); setTeam(t.id); }} style={{
+                              padding: "6px 4px", borderRadius: 8, cursor: "pointer", textAlign: "center",
+                              border: `2px solid ${team === t.id ? ACCENT : BORDER}`,
+                              background: team === t.id ? LIGHT : WHITE, transition: "all 0.2s",
+                            }}>
+                              <div style={{ display: "flex", justifyContent: "center", gap: 2, marginBottom: 3 }}>
+                                <div style={{ width: 12, height: 16, borderRadius: 2, background: t.primary }} />
+                                <div style={{ width: 12, height: 16, borderRadius: 2, background: t.secondary }} />
+                              </div>
+                              <span style={{ fontSize: 9, fontWeight: 600, color: ACCENT, lineHeight: 1 }}>{t.name}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Stats */}
