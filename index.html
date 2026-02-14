@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Drills Quest">
+  <meta name="theme-color" content="#FAFAFA">
+  <title>Drills Quest - Level up your game</title>
+
+  <!-- COPPA/FERPA Compliance: No third-party analytics, no cookies, no PII collection -->
+  <!-- All data stored locally in browser localStorage only -->
+  <!-- YouTube embeds use youtube-nocookie.com (privacy-enhanced mode) -->
+  <!-- No external tracking scripts, no social media integrations -->
+  <!-- Player name is stored locally only, never transmitted -->
+
+  <style>
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body { margin: 0; padding: 0; font-family: 'SF Pro Display', 'SF Pro', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; -webkit-text-size-adjust: 100%; }
+    html, body, #root { height: 100%; width: 100%; }
+    button:not(.pill) { min-height: 44px; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes slideDown { from { transform: translate(-50%, -120%); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
+    ::-webkit-scrollbar { display: none; }
+    @supports (padding-bottom: env(safe-area-inset-bottom)) {
+      .safe-bottom { padding-bottom: calc(10px + env(safe-area-inset-bottom)) !important; }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- React 18 & ReactDOM from CDN -->
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+
+  <!-- Babel Standalone for JSX transpilation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+
+  <script type="text/babel">
+    const { useState, useEffect, useCallback } = React;
+
+    // ─── SVG ICON SYSTEM ─────────────────────────────────────────────────────────
+    // Clean line icons — Dieter Rams meets Apple Store
+
+    const Icon = ({ name, size = 24, color = "currentColor", sw = 1.5 }) => {
+      const s = { width: size, height: size, fill: "none", stroke: color, strokeWidth: sw, strokeLinecap: "round", strokeLinejoin: "round" };
+      const icons = {
+        home: <svg viewBox="0 0 24 24" style={s}><path d="M3 10.5L12 3l9 7.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V10.5z"/><path d="M9 21V12h6v9"/></svg>,
+        ball: <svg viewBox="0 0 24 24" style={s}><circle cx="12" cy="12" r="10"/><path d="M12 2a15 15 0 014 10 15 15 0 01-4 10M12 2a15 15 0 00-4 10 15 15 0 004 10M2 12h20"/></svg>,
+        grid: <svg viewBox="0 0 24 24" style={s}><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>,
+        tree: <svg viewBox="0 0 24 24" style={s}><path d="M12 22V8M12 8l-4 4M12 8l4 4"/><circle cx="12" cy="5" r="3"/></svg>,
+        trophy: <svg viewBox="0 0 24 24" style={s}><path d="M6 9H3a1 1 0 01-1-1V5a1 1 0 011-1h3M18 9h3a1 1 0 001-1V5a1 1 0 00-1-1h-3"/><path d="M6 4h12v6a6 6 0 01-12 0V4z"/><path d="M9 20h6M12 16v4"/></svg>,
+        user: <svg viewBox="0 0 24 24" style={s}><circle cx="12" cy="8" r="4"/><path d="M5 21a7 7 0 0114 0"/></svg>,
+        check: <svg viewBox="0 0 24 24" style={s}><path d="M20 6L9 17l-5-5"/></svg>,
+        lock: <svg viewBox="0 0 24 24" style={s}><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>,
+        clock: <svg viewBox="0 0 24 24" style={s}><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>,
+        arrow: <svg viewBox="0 0 24 24" style={s}><path d="M5 12h14M12 5l7 7-7 7"/></svg>,
+        back: <svg viewBox="0 0 24 24" style={s}><path d="M19 12H5M12 19l-7-7 7-7"/></svg>,
+        zap: <svg viewBox="0 0 24 24" style={{...s, fill: color, stroke: "none"}}><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>,
+        indoor: <svg viewBox="0 0 24 24" style={s}><path d="M3 10.5L12 3l9 7.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V10.5z"/></svg>,
+        outdoor: <svg viewBox="0 0 24 24" style={s}><circle cx="12" cy="5" r="3"/><path d="M12 8v14M8 12l4-4 4 4M6 18l6-6 6 6"/></svg>,
+        star: <svg viewBox="0 0 24 24" style={{...s, fill: color, stroke: "none"}}><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>,
+        fire: <svg viewBox="0 0 24 24" style={s}><path d="M12 22c4-2 8-6 8-12a8 8 0 00-8-8C8 2 8 6 8 8s-4 2-4 4c0 4 4 8 8 10z"/><path d="M12 22c-2-1-4-3-4-6 0-2 2-3 4-2s4 0 4-2c0-2-2-3-4-6"/></svg>,
+        target: <svg viewBox="0 0 24 24" style={s}><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>,
+        play: <svg viewBox="0 0 24 24" style={{...s, fill: color, stroke: "none"}}><path d="M6 4l15 8-15 8V4z"/></svg>,
+        external: <svg viewBox="0 0 24 24" style={s}><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>,
+        // Category illustrations — simple, clean line art
+        cat_mastery: <svg viewBox="0 0 48 48" style={{...s, width: size, height: size}}><circle cx="24" cy="30" r="12"/><path d="M24 18v-6M18 30a6 6 0 016-6 6 6 0 016 6"/><path d="M16 26l8-8 8 8" strokeDasharray="2 2"/></svg>,
+        cat_dribble: <svg viewBox="0 0 48 48" style={{...s, width: size, height: size}}><circle cx="12" cy="36" r="4"/><circle cx="24" cy="28" r="4"/><circle cx="36" cy="36" r="4"/><path d="M8 20l8 8 8-8 8 8" strokeDasharray="3 3"/><circle cx="8" cy="16" r="3"/></svg>,
+        cat_touch: <svg viewBox="0 0 48 48" style={{...s, width: size, height: size}}><circle cx="24" cy="24" r="8"/><path d="M24 4v8M24 36v8M4 24h8M36 24h8"/><path d="M36 12l-6 6M12 36l6-6"/></svg>,
+        cat_pass: <svg viewBox="0 0 48 48" style={{...s, width: size, height: size}}><circle cx="10" cy="24" r="4"/><circle cx="38" cy="24" r="4"/><path d="M14 24h20" strokeDasharray="4 3"/><path d="M28 20l6 4-6 4"/></svg>,
+        cat_shoot: <svg viewBox="0 0 48 48" style={{...s, width: size, height: size}}><rect x="8" y="8" width="32" height="24" rx="2" fill="none"/><path d="M8 8l16 12L40 8"/><circle cx="24" cy="40" r="4"/><path d="M24 36v-6" strokeDasharray="2 2"/></svg>,
+        cat_tricks: <svg viewBox="0 0 48 48" style={{...s, width: size, height: size}}><circle cx="24" cy="32" r="6"/><path d="M18 16c0-4 2-8 6-8s6 4 6 8"/><path d="M14 22c2-2 6-4 10-4s8 2 10 4"/><path d="M24 26v-4"/></svg>,
+        cat_fitness: <svg viewBox="0 0 48 48" style={{...s, width: size, height: size}}><path d="M12 20v16M36 20v16M8 24h8M32 24h8M20 22v12M28 22v12M20 28h8"/></svg>,
+      };
+      return icons[name] || null;
+    };
+
+    // ─── PIXEL ART AVATARS ──────────────────────────────────────────────────────
+    // 8x11 pixel grid characters — boys & girls with diverse looks
+
+    const AVATAR_IDS = ['boy1','girl1','boy2','boy3','girl2','boy4','boy5','boy6','boy7'];
+
+    const PixelAvatar = ({ id, size = 48, jersey, stripe }) => {
+      const common = { E:'#2D2D2D', W:'#FFFFFF', K:'#2D2D2D', B:'#333333' };
+      const defs = {
+        boy1: { g:'..HHHH...HHHHHH..SSSSSS..SESSES...SSSS..JJJJJJ..JWJJWJ..JJJJJJ...KKKK...SS.SS...BB.BB.', H:'#4A3728',S:'#FFDBB4',J:'#007AFF' },
+        boy2: { g:'..HHHH...HHHHHH..SSSSSS..SESSES...SSSS..JJJJJJ..JWJJWJ..JJJJJJ...KKKK...SS.SS...BB.BB.', H:'#1A1A1A',S:'#8D5524',J:'#E63946' },
+        boy3: { g:'.HHHHHH.HHHHHHHH.SSSSSS..SESSES...SSSS..JJJJJJ..JWJJWJ..JJJJJJ...KKKK...SS.SS...BB.BB.', H:'#2C1810',S:'#C68642',J:'#34C759' },
+        boy4: { g:'.H.HH.H..HHHHHH..SSSSSS..SESSES...SSSS..JJJJJJ..JWJJWJ..JJJJJJ...KKKK...SS.SS...BB.BB.', H:'#D4A017',S:'#FFDBB4',J:'#FF9500' },
+        boy5: { g:'..HHHH...HHHHHH..SSSSSS..SESSES...SSSS..JJJJJJ..JWJJWJ..JJJJJJ...KKKK...SS.SS...BB.BB.', H:'#D4763C',S:'#D4A675',J:'#30B0C7' },
+        boy6: { g:'.HHHHHH.HHHHHHHH.SSSSSS..SESSES...SSSS..JJJJJJ..JWJJWJ..JJJJJJ...KKKK...SS.SS...BB.BB.', H:'#1A1A1A',S:'#FFDBB4',J:'#FF6B8A' },
+        boy7: { g:'..HHHH...HHHHHH..SSSSSS..SESSES...SSSS..JJJJJJ..JWJJWJ..JJJJJJ...KKKK...SS.SS...BB.BB.', H:'#8B4513',S:'#8D5524',J:'#FFD60A' },
+        girl1: { g:'..HHHH...HHHHHH.HSSSSSSHHSESSESHH.SSSS.HH.JJJJ.HH.JWWJ.H..JJJJ....KKKK...SS.SS..BB.BB.', H:'#5C3317',S:'#FFDBB4',J:'#AF52DE' },
+        girl2: { g:'..HHHH...HHHHHH.HSSSSSSHHSESSESHH.SSSS.HH.JJJJ.HH.JWWJ.H..JJJJ....KKKK...SS.SS..BB.BB.', H:'#1A1A1A',S:'#8D5524',J:'#30B0C7' },
+      };
+      const d = defs[id];
+      if (!d) return null;
+      const pal = { ...common, H:d.H, S:d.S, J: jersey || d.J, W: stripe || '#FFFFFF' };
+      const rects = [];
+      for (let i = 0; i < d.g.length; i++) {
+        const c = d.g[i];
+        if (c !== '.') {
+          rects.push(<rect key={i} x={i%8} y={Math.floor(i/8)} width={1} height={1} fill={pal[c]} />);
+        }
+      }
+      return <svg width={size} height={size*11/8} viewBox="0 0 8 11" style={{imageRendering:'pixelated'}}>{rects}</svg>;
+    };
+
+
+    // ─── COLOR BANDS ────────────────────────────────────────────────────────────
+    // Solid two-tone color bands per section, inspired by famous team kits
+
+    const TAB_BANDS = {
+      home:    { a: "#0066CC", b: "#E63946" },
+      drills:  { a: "#E63946", b: "#2D2D2D" },
+      skills:  { a: "#0066CC", b: "#FFFFFF" },
+      badges:  { a: "#00843D", b: "#2D2D2D" },
+      profile: { a: "#2D2D2D", b: "#FFFFFF" },
+    };
+    const ColorBand = ({ tab }) => {
+      const c = TAB_BANDS[tab] || { a: "#2D2D2D", b: "#FFFFFF" };
+      return (
+        <div style={{ height: 8, background: `repeating-linear-gradient(90deg, ${c.a} 0px, ${c.a} 24px, ${c.b} 24px, ${c.b} 48px)` }} />
+      );
+    };
+
+    // ─── DATA ────────────────────────────────────────────────────────────────────
+
+    const LEVELS = [
+      { name: "Rookie", minXP: 0 },
+      { name: "Starter", minXP: 100 },
+      { name: "Baller", minXP: 300 },
+      { name: "Tekker", minXP: 600 },
+      { name: "Maestro", minXP: 1000 },
+      { name: "Pro", minXP: 1500 },
+      { name: "Elite", minXP: 2200 },
+      { name: "Legend", minXP: 3000 },
+    ];
+
+    const DRILLS = [
+      { id: "toe_taps", name: "Toe Taps", category: "Ball Mastery", setting: "indoor", difficulty: 1, xp: 15, duration: "3 min", equipment: ["Ball"], inspiredBy: "PersianBall", desc: "Tap the top of the ball, alternating feet. Build rhythm and speed.", steps: ["Ball in front of you", "Tap top with right sole", "Switch — tap with left", "Go faster each round", "Don't look down!"], tips: "Stay on the balls of your feet." },
+      { id: "sole_rolls", name: "Sole Rolls", category: "Ball Mastery", setting: "indoor", difficulty: 1, xp: 15, duration: "3 min", equipment: ["Ball"], inspiredBy: "PersianBall", desc: "Roll the ball side to side under your foot. Master close control.", steps: ["Right sole on ball", "Roll it left", "Stop with left sole", "Roll it back right", "Keep it smooth"], tips: "Gentle pressure — don't stomp." },
+      { id: "inside_inside", name: "Inside Touch", category: "Ball Mastery", setting: "indoor", difficulty: 1, xp: 15, duration: "3 min", equipment: ["Ball"], inspiredBy: "Joga Bonito", desc: "Pass between your feet using the inside of each foot.", steps: ["Ball between your feet", "Push left with right inside", "Push right with left inside", "Keep it moving", "Speed up gradually"], tips: "Soft touches. Ball stays close." },
+      { id: "v_pulls", name: "V-Pulls", category: "Ball Mastery", setting: "indoor", difficulty: 2, xp: 25, duration: "5 min", equipment: ["Ball"], inspiredBy: "PersianBall", desc: "Pull back, push forward at an angle. The ball traces a V.", steps: ["Sole on ball", "Pull back toward you", "Push forward-right with inside", "Repeat with left foot", "Get the V shape crisp"], tips: "Quick and decisive pull-back." },
+      { id: "figure_eight", name: "Figure 8", category: "Ball Mastery", setting: "indoor", difficulty: 2, xp: 25, duration: "5 min", equipment: ["Ball", "2 objects"], inspiredBy: "Joga Bonito", desc: "Weave in a figure-8 around two objects. Both feet.", steps: ["2 cones, 3 feet apart", "Dribble around the right", "Loop into a figure-8", "Around the second", "Use both feet"], tips: "Small, quick touches only." },
+
+      { id: "cone_weave", name: "Cone Weave", category: "Ball Mastery", setting: "outdoor", difficulty: 1, xp: 20, duration: "10 min", equipment: ["Ball", "6-8 cones"], inspiredBy: "Anytime Soccer", desc: "Weave through a line of cones using inside and outside touches. Keep the ball glued to your feet.", steps: ["Set up 6-8 cones in a line, 1-2 yards apart", "Dribble through using inside and outside of foot", "Keep touches small — ball stays within a foot of you", "Turn at the end and weave back", "Switch to weaker foot only"], tips: "Start slow! Speed comes later. Focus on close control." },
+      { id: "box_mastery", name: "Box Mastery", category: "Ball Mastery", setting: "outdoor", difficulty: 2, xp: 25, duration: "8 min", equipment: ["Ball", "4 cones"], inspiredBy: "Anytime Soccer", desc: "Dribble around a square of cones, using different touches on each side. Builds multi-directional control.", steps: ["Place 4 cones in a 3-4 yard square", "Side 1: inside-of-foot touches only", "Side 2: outside-of-foot touches only", "Side 3: sole rolls along the line", "3 laps, then reverse direction"], tips: "At each corner, practice a sharp cut — pretend a defender is chasing you!" },
+      { id: "drag_back_turns", name: "Drag-Back Turn", category: "Ball Mastery", setting: "outdoor", difficulty: 1, xp: 20, duration: "8 min", equipment: ["Ball", "2 cones"], inspiredBy: "Catalan Soccer", desc: "Dribble to a cone, drag the ball back with your sole, and turn. The key turning skill for changing direction.", steps: ["Place 2 cones 8-10 yards apart", "Dribble from cone A toward cone B", "At the cone, sole on ball — drag it back", "Push off with inside of other foot", "Dribble back and repeat 8-10 times"], tips: "Stay low and bend your knees — it helps balance and makes you quicker!" },
+
+      { id: "cone_slalom", name: "Cone Slalom", category: "Dribbling", setting: "outdoor", difficulty: 1, xp: 20, duration: "5 min", equipment: ["Ball", "5+ cones"], inspiredBy: "Fit 4 Football", desc: "Weave through cones. Classic speed + control drill.", steps: ["Line up 5-8 cones", "Dribble through, weaving", "Inside and outside of foot", "Turn at the end", "Beat your time"], tips: "Outside foot around cone, inside to cut back." },
+      { id: "gate_dribble", name: "Gate Run", category: "Dribbling", setting: "outdoor", difficulty: 2, xp: 25, duration: "5 min", equipment: ["Ball", "8+ cones"], inspiredBy: "Fit 4 Football", desc: "Scatter gates around. How many can you dribble through in 60 seconds?", steps: ["Make 5 cone gates", "Spread around a 10x10 area", "Dribble through gates", "60 seconds — count them!", "Beat your high score"], tips: "Head up. Plan your route." },
+      { id: "speed_dribble", name: "Speed Burst", category: "Dribbling", setting: "outdoor", difficulty: 2, xp: 25, duration: "5 min", equipment: ["Ball", "2 cones"], inspiredBy: "Aaron AT8", desc: "Push the ball ahead with your laces and sprint. Full speed control.", steps: ["2 cones, 20 yards apart", "Push ball with laces", "Sprint after it", "Control before the cone", "Turn and repeat"], tips: "Push 2-3 feet ahead, not more." },
+      { id: "close_control_box", name: "Tight Box", category: "Dribbling", setting: "indoor", difficulty: 2, xp: 25, duration: "5 min", equipment: ["Ball", "4 cones"], inspiredBy: "Jack Denton", desc: "Stay inside a tiny box. Don't let the ball escape.", steps: ["Mark a 3x3 yard box", "Dribble inside — all surfaces", "Change direction constantly", "Mix up your moves", "60 seconds, no escape!"], tips: "Smaller touches = more control." },
+
+      { id: "wall_pass", name: "Wall Pass", category: "First Touch", setting: "indoor", difficulty: 1, xp: 20, duration: "5 min", equipment: ["Ball", "Wall"], inspiredBy: "Jack Denton", desc: "Pass against the wall, cushion with a clean first touch.", steps: ["5 feet from wall", "Pass firmly, right foot", "Cushion back with left", "Switch feet each time", "Move further back"], tips: "Let your foot give — absorb it." },
+      { id: "directional_touch", name: "Direction Touch", category: "First Touch", setting: "outdoor", difficulty: 2, xp: 30, duration: "8 min", equipment: ["Ball", "Wall", "3 cones"], inspiredBy: "Jack Denton", desc: "Receive and redirect in one touch. Think ahead.", steps: ["3 cones in a triangle", "Pass against the wall", "First touch toward a cone", "Sprint to the ball", "Repeat, different cone"], tips: "Open your body before the ball arrives." },
+      { id: "bounce_control", name: "Air Control", category: "First Touch", setting: "indoor", difficulty: 2, xp: 25, duration: "5 min", equipment: ["Ball"], inspiredBy: "Jeremy Lynch", desc: "Toss the ball up, kill it dead with one touch.", steps: ["Toss ball 6 feet up", "Cushion with laces", "Dead stop — no bounce", "Try thigh next", "Then chest"], tips: "Pull your foot down as the ball lands." },
+
+      { id: "target_passing", name: "Target Pass", category: "Passing", setting: "outdoor", difficulty: 1, xp: 20, duration: "5 min", equipment: ["Ball", "Target"], inspiredBy: "Fit 4 Football", desc: "Hit a target 10 yards away. Accuracy is everything.", steps: ["Place target 10 yards out", "Pass with inside of foot", "3 points for direct hit", "1 point if within a yard", "Race to 20 points"], tips: "Plant foot points at target." },
+      { id: "triangle_passing", name: "Triangle Pass", category: "Passing", setting: "outdoor", difficulty: 2, xp: 30, duration: "8 min", equipment: ["Ball", "2 people", "3 cones"], inspiredBy: "Fit 4 Football", desc: "Three players, triangle shape. 2-touch, then 1-touch.", steps: ["Triangle, 8 yards apart", "Pass around — 2-touch max", "Switch to 1-touch", "Reverse direction", "Count streak without mistakes"], tips: "Face your next pass before the ball arrives." },
+      { id: "wall_one_two", name: "Wall Give-Go", category: "Passing", setting: "indoor", difficulty: 2, xp: 25, duration: "5 min", equipment: ["Ball", "Wall"], inspiredBy: "Jon Winston", desc: "The wall is your teammate. Pass, move, receive.", steps: ["5 yards from wall, angled", "Pass firmly", "Move to a new spot", "Receive with first touch", "Pass again immediately"], tips: "Move before the ball gets to you." },
+
+      { id: "corner_sniper", name: "Corner Sniper", category: "Shooting", setting: "outdoor", difficulty: 2, xp: 30, duration: "10 min", equipment: ["Ball", "Goal", "4 cones"], inspiredBy: "Aaron AT8", desc: "Targets in the corners. Pick your spot and hit it.", steps: ["Cone in each goal corner", "Ball 12 yards out", "Pick a corner, shoot", "Top corner = 5 pts", "10 shots, track score"], tips: "Head over ball to keep it low." },
+      { id: "dribble_strike", name: "Dribble & Strike", category: "Shooting", setting: "outdoor", difficulty: 2, xp: 30, duration: "10 min", equipment: ["Ball", "Goal", "3 cones"], inspiredBy: "Aaron AT8", desc: "Dribble through cones then shoot. Like a real match.", steps: ["3 cones, 15 yards from goal", "Dribble through all 3", "Set the ball with a touch", "Shoot for corners", "Repeat 10 times"], tips: "Don't rush — that setup touch matters." },
+
+      { id: "scissors", name: "Scissors", category: "Tricks", setting: "indoor", difficulty: 2, xp: 30, duration: "5 min", equipment: ["Ball"], inspiredBy: "Jeremy Lynch", desc: "Loop your foot around the ball. Fake one way, go the other.", steps: ["Ball in front of you", "Swing right foot around ball", "Don't touch it!", "Plant right, push left", "Try double scissors"], tips: "Drop your shoulder to sell the fake." },
+      { id: "cruyff_turn", name: "Cruyff Turn", category: "Tricks", setting: "indoor", difficulty: 2, xp: 35, duration: "5 min", equipment: ["Ball"], inspiredBy: "Joga Bonito", desc: "Fake a pass, drag behind your leg, spin away. Legendary.", steps: ["Dribble forward", "Shape up like you'll pass", "Drag ball behind standing leg", "Turn 180 degrees", "Accelerate away"], tips: "Sell the fake pass. Commit to it." },
+      { id: "ronaldo_chop", name: "Ronaldo Chop", category: "Tricks", setting: "outdoor", difficulty: 3, xp: 40, duration: "8 min", equipment: ["Ball"], inspiredBy: "Jeremy Lynch", desc: "Running chop — sharp direction change. Defenders hate this.", steps: ["Dribble at medium speed", "Small jump", "Chop ball sideways, inside foot", "Ball goes opposite way", "Burst away"], tips: "Do it when a defender is sprinting at you." },
+      { id: "rainbow_flick", name: "Rainbow Flick", category: "Tricks", setting: "outdoor", difficulty: 3, xp: 50, duration: "10 min", equipment: ["Ball"], inspiredBy: "Jeremy Lynch", desc: "Flick the ball over your head. The ultimate showstopper.", steps: ["Roll ball up your calf", "Use other foot to push up", "Flick heel to pop it", "Ball arcs over your head", "Collect on other side"], tips: "Master the roll-up first. This takes days." },
+      { id: "elastico", name: "Elastico", category: "Tricks", setting: "indoor", difficulty: 3, xp: 45, duration: "8 min", equipment: ["Ball"], inspiredBy: "Joga Bonito", desc: "Outside push, inside snap. One motion. Pure magic.", steps: ["Ball in front", "Push right with outside", "Snap left with inside", "One fluid motion", "Practice without ball first"], tips: "No pause between outside and inside touch." },
+
+      { id: "agility_ladder", name: "Quick Feet", category: "Fitness", setting: "indoor", difficulty: 1, xp: 20, duration: "5 min", equipment: ["Ladder or tape"], inspiredBy: "Fit 4 Football", desc: "Fast footwork through a ladder pattern. Build match speed.", steps: ["Lay out ladder (or tape)", "Both feet each square — fast!", "One foot per square next", "Sideways shuffle", "In-in-out-out pattern"], tips: "Balls of your feet. Pump your arms." },
+      { id: "ball_juggling", name: "Juggling", category: "Fitness", setting: "indoor", difficulty: 2, xp: 25, duration: "10 min", equipment: ["Ball"], inspiredBy: "Jeremy Lynch", desc: "Keep the ball in the air. Feet, thighs, head. Beat your record.", steps: ["Drop ball onto foot", "Kick up to hands — 10x each foot", "Try 2 juggles before catch", "Then 3, then 4...", "Track your best streak"], tips: "Lock ankle. Gentle taps — don't boot it." },
+      { id: "shuttle_runs", name: "Shuttles", category: "Fitness", setting: "outdoor", difficulty: 2, xp: 20, duration: "8 min", equipment: ["4 cones"], inspiredBy: "Fit 4 Football", desc: "Sprint to each cone and back. Build explosive match fitness.", steps: ["Cones at 5, 10, 15, 20 yards", "Sprint to first, back to start", "Sprint to second, back", "Through all 4 cones", "Rest 30s, repeat 3-5x"], tips: "Stay low when changing direction." },
+    ];
+
+    const BADGES = [
+      { id: "first_drill", name: "First Touch", desc: "Complete 1 drill", req: (s) => s.completedDrills.length >= 1 },
+      { id: "five_drills", name: "On Fire", desc: "Complete 5 drills", req: (s) => s.completedDrills.length >= 5 },
+      { id: "ten_drills", name: "Unstoppable", desc: "Complete 10 drills", req: (s) => s.completedDrills.length >= 10 },
+      { id: "twenty_drills", name: "Machine", desc: "Complete 20 drills", req: (s) => s.completedDrills.length >= 20 },
+      { id: "streak_3", name: "Hat Trick", desc: "3-day streak", req: (s) => s.streak >= 3 },
+      { id: "streak_7", name: "Iron Will", desc: "7-day streak", req: (s) => s.streak >= 7 },
+      { id: "indoor_5", name: "House Rules", desc: "5 indoor drills", req: (s) => s.completedDrills.filter(id => DRILLS.find(d => d.id === id)?.setting === "indoor").length >= 5 },
+      { id: "outdoor_5", name: "Pitch Pro", desc: "5 outdoor drills", req: (s) => s.completedDrills.filter(id => DRILLS.find(d => d.id === id)?.setting === "outdoor").length >= 5 },
+      { id: "ball_master", name: "Ball Whisperer", desc: "All Ball Mastery done", req: (s) => DRILLS.filter(d => d.category === "Ball Mastery").every(d => s.completedDrills.includes(d.id)) },
+      { id: "trickster", name: "Showboat", desc: "All Tricks done", req: (s) => DRILLS.filter(d => d.category === "Tricks").every(d => s.completedDrills.includes(d.id)) },
+      { id: "level_baller", name: "Baller Status", desc: "Reach Baller level", req: (s) => s.xp >= 300 },
+      { id: "level_legend", name: "Legend", desc: "Reach Legend level", req: (s) => s.xp >= 3000 },
+    ];
+
+    const CATEGORIES = ["All", "Ball Mastery", "Dribbling", "First Touch", "Passing", "Shooting", "Tricks", "Fitness"];
+    const CAT_ICONS = { "Ball Mastery": "cat_mastery", "Dribbling": "cat_dribble", "First Touch": "cat_touch", "Passing": "cat_pass", "Shooting": "cat_shoot", "Tricks": "cat_tricks", "Fitness": "cat_fitness" };
+
+    // COPPA: No links to social media platforms, no external creator references
+
+    // Embedded YouTube video IDs (privacy-enhanced, no social media)
+    // null = use search fallback for that drill
+    const DRILL_VIDEO_IDS = {
+      toe_taps: "94KuOfMKG2Q",
+      sole_rolls: "SxI9PjFG_KQ",
+      inside_inside: "I8r_5qW9j1c",
+      v_pulls: "3ImgZ2yJ39s",
+      figure_eight: "_gOORygHlLE",
+      cone_slalom: "iBr04lDDADs",
+      gate_dribble: "oJmFo4r4ZQ8",
+      speed_dribble: "UxQlopmM2-Q",
+      close_control_box: "p8JdwmHKZls",
+      wall_pass: "25coBn2xJws",
+      directional_touch: "JbOwpq_8CeM",
+      bounce_control: "e4hoLwfHJgA",
+      target_passing: "25coBn2xJws",
+      triangle_passing: "gOUO7DpaYJE",
+      wall_one_two: "xJGHMjrHU3c",
+      corner_sniper: "IhC4u8UP9Tw",
+      dribble_strike: "pcPLE_1Eq0k",
+      scissors: "2UwRk0jasTQ",
+      cruyff_turn: "Kjsl6ZjYPlU",
+      ronaldo_chop: "nL_J83wHcfk",
+      rainbow_flick: "p0Nh6IOYShg",
+      elastico: "Uursm9mHlq4",
+      agility_ladder: "TnqzDHC9zyY",
+      ball_juggling: "krSBbunxdUg",
+      shuttle_runs: "Kgat50v5IR0",
+      cone_weave: "0yA6SCKlgI4",
+      box_mastery: "4CCcrizhIhg",
+      drag_back_turns: "ff-EWUlThh0",
+    };
+
+
+    // ─── SOUND EFFECTS ──────────────────────────────────────────────────────────
+    const _audioCtx = () => window._kqAudio || (window._kqAudio = new (window.AudioContext || window.webkitAudioContext)());
+
+    function playClick() {
+      try {
+        const ctx = _audioCtx();
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = "sine";
+        o.frequency.setValueAtTime(880, ctx.currentTime);
+        o.frequency.exponentialRampToValueAtTime(660, ctx.currentTime + 0.06);
+        g.gain.setValueAtTime(0.12, ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+        o.connect(g); g.connect(ctx.destination);
+        o.start(); o.stop(ctx.currentTime + 0.08);
+      } catch(e) {}
+    }
+
+    function playGoal() {
+      try {
+        const ctx = _audioCtx();
+        const t = ctx.currentTime;
+        // Stadium air horn — long blast like a real goal
+        [261.63, 329.63, 392.00, 523.25].forEach((freq, i) => {
+          const o = ctx.createOscillator();
+          const g = ctx.createGain();
+          o.type = "sawtooth";
+          o.frequency.setValueAtTime(freq, t);
+          g.gain.setValueAtTime(0.06, t);
+          g.gain.setValueAtTime(0.06, t + 1.8);
+          g.gain.exponentialRampToValueAtTime(0.001, t + 2.5);
+          o.connect(g); g.connect(ctx.destination);
+          o.start(t + i * 0.03);
+          o.stop(t + 2.5);
+        });
+        // Crowd roar — white noise burst
+        const buf = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
+        const data = buf.getChannelData(0);
+        for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * 0.15;
+        const noise = ctx.createBufferSource();
+        noise.buffer = buf;
+        const ng = ctx.createGain();
+        ng.gain.setValueAtTime(0, t);
+        ng.gain.linearRampToValueAtTime(0.08, t + 0.3);
+        ng.gain.setValueAtTime(0.08, t + 1.5);
+        ng.gain.exponentialRampToValueAtTime(0.001, t + 2.5);
+        const filter = ctx.createBiquadFilter();
+        filter.type = "bandpass";
+        filter.frequency.value = 800;
+        filter.Q.value = 0.5;
+        noise.connect(filter); filter.connect(ng); ng.connect(ctx.destination);
+        noise.start(t); noise.stop(t + 2.5);
+        // Referee whistle — three short blasts
+        [0, 0.4, 0.8].forEach(delay => {
+          const w = ctx.createOscillator();
+          const wg = ctx.createGain();
+          w.type = "sine";
+          w.frequency.setValueAtTime(2800, t + delay);
+          w.frequency.setValueAtTime(3200, t + delay + 0.08);
+          w.frequency.setValueAtTime(2800, t + delay + 0.15);
+          wg.gain.setValueAtTime(0.04, t + delay);
+          wg.gain.exponentialRampToValueAtTime(0.001, t + delay + 0.2);
+          w.connect(wg); wg.connect(ctx.destination);
+          w.start(t + delay); w.stop(t + delay + 0.2);
+        });
+      } catch(e) {}
+    }
+
+    // ─── HELPERS ─────────────────────────────────────────────────────────────────
+
+    const ACCENT = "#2D2D2D";
+    const GREEN = "#34C759";
+    const BLUE = "#007AFF";
+    const GRAY = "#8E8E93";
+    const LIGHT = "#F2F2F7";
+    const WHITE = "#FFFFFF";
+    const BG = "#FAFAFA";
+    const BORDER = "#E5E5EA";
+
+    const CATEGORY_COLORS = {
+      "Ball Mastery":  { primary: "#FFDF00", dark: "#B8A000" },
+      "Dribbling":     { primary: "#E63946", dark: "#B22030" },
+      "First Touch":   { primary: "#034694", dark: "#022D61" },
+      "Passing":       { primary: "#00843D", dark: "#006230" },
+      "Shooting":      { primary: "#FF6B00", dark: "#CC5500" },
+      "Tricks":        { primary: "#7B2D8E", dark: "#5A1F68" },
+      "Fitness":       { primary: "#6CACE4", dark: "#4A8BC0" },
+    };
+    function getCatColor(cat) {
+      return CATEGORY_COLORS[cat] || { primary: ACCENT, dark: ACCENT };
+    }
+
+    const TAB_COLORS = {
+      home: "#FFDF00", drills: "#E63946", skills: "#034694", badges: "#7B2D8E", profile: "#FF6B00",
+    };
+
+    function getLevel(xp) { let lv = LEVELS[0]; for (const l of LEVELS) { if (xp >= l.minXP) lv = l; } return lv; }
+    function getNextLevel(xp) { for (const l of LEVELS) { if (xp < l.minXP) return l; } return null; }
+    function getLevelProgress(xp) { const c = getLevel(xp), n = getNextLevel(xp); if (!n) return 100; return Math.round(((xp - c.minXP) / (n.minXP - c.minXP)) * 100); }
+
+    // ─── PERSISTENCE ──────────────────────────────────────────────────────────────
+
+    const SAVE_KEY = "kickquest_save";
+
+    function loadSave() {
+      try {
+        const raw = localStorage.getItem(SAVE_KEY);
+        if (!raw) return null;
+        return JSON.parse(raw);
+      } catch(e) { return null; }
+    }
+
+    function writeSave(data) {
+      try { localStorage.setItem(SAVE_KEY, JSON.stringify(data)); } catch(e) {}
+    }
+
+    function clearSave() {
+      try { localStorage.removeItem(SAVE_KEY); } catch(e) {}
+    }
+
+    function getToday() {
+      return new Date().toISOString().slice(0, 10);
+    }
+
+    function calcStreak(lastDate, currentStreak) {
+      if (!lastDate) return 1;
+      const today = getToday();
+      if (lastDate === today) return currentStreak;
+      const last = new Date(lastDate + "T00:00:00");
+      const now = new Date(today + "T00:00:00");
+      const diffDays = Math.round((now - last) / (1000 * 60 * 60 * 24));
+      if (diffDays === 1) return currentStreak + 1;
+      return 1; // streak broken
+    }
+
+    // ─── TEAM JERSEYS ────────────────────────────────────────────────────────────
+    const TEAMS = [
+      { id: "arsenal", name: "Arsenal", primary: "#EF0107", secondary: "#FFFFFF" },
+      { id: "chelsea", name: "Chelsea", primary: "#034694", secondary: "#FFFFFF" },
+      { id: "liverpool", name: "Liverpool", primary: "#C8102E", secondary: "#FFFFFF" },
+      { id: "mancity", name: "Man City", primary: "#6CABDD", secondary: "#FFFFFF" },
+      { id: "manutd", name: "Man United", primary: "#DA291C", secondary: "#FBE122" },
+      { id: "tottenham", name: "Tottenham", primary: "#132257", secondary: "#FFFFFF" },
+      { id: "barcelona", name: "Barcelona", primary: "#A50044", secondary: "#004D98" },
+      { id: "realmadrid", name: "Real Madrid", primary: "#FEBE10", secondary: "#FFFFFF" },
+      { id: "lafc", name: "LAFC", primary: "#C39E6D", secondary: "#000000" },
+      { id: "intermiami", name: "Inter Miami", primary: "#F7B5CD", secondary: "#231F20" },
+      { id: "atlanta", name: "Atlanta Utd", primary: "#80000A", secondary: "#A19060" },
+      { id: "nycfc", name: "NYCFC", primary: "#6CACE4", secondary: "#F15524" },
+    ];
+
+    // ─── MAIN APP ────────────────────────────────────────────────────────────────
+
+    function DrillsQuest() {
+      const saved = React.useMemo(() => loadSave(), []);
+      const hasReturning = saved && saved.playerName;
+
+      const [screen, setScreen] = useState("splash");
+      const [tab, setTab] = useState("home");
+      const [playerName, setPlayerName] = useState(hasReturning ? saved.playerName : "");
+      const [nameInput, setNameInput] = useState("");
+      const [avatar, setAvatar] = useState(saved?.avatar || null);
+      const [team, setTeam] = useState(saved?.team || null);
+      const [xp, setXP] = useState(saved?.xp || 0);
+      const [completedDrills, setCompletedDrills] = useState(saved?.completedDrills || []);
+      const [streak, setStreak] = useState(() => saved ? calcStreak(saved.lastDate, saved.streak || 1) : 1);
+      const [lastDate, setLastDate] = useState(saved?.lastDate || null);
+      const [selectedDrill, setSelectedDrill] = useState(null);
+      const [categoryFilter, setCategoryFilter] = useState("All");
+      const [settingFilter, setSettingFilter] = useState("Indoor");
+      const [unlockedBadges, setUnlockedBadges] = useState(saved?.unlockedBadges || []);
+      const [showComplete, setShowComplete] = useState(false);
+      const [showLevelUp, setShowLevelUp] = useState(false);
+      const [newBadge, setNewBadge] = useState(null);
+      const [lockedMsg, setLockedMsg] = useState(null);
+      const [dailyChallenge] = useState(() => {
+        const today = getToday();
+        const seed = today.split("-").join("") | 0;
+        return DRILLS[seed % DRILLS.length];
+      });
+      const [skillTreeUnlocked, setSkillTreeUnlocked] = useState(["Ball Mastery", "Fitness"]);
+
+      // Save to localStorage whenever progress changes
+      useEffect(() => {
+        if (!playerName) return;
+        writeSave({ playerName, avatar, team, xp, completedDrills, streak, lastDate, unlockedBadges });
+      }, [playerName, avatar, team, xp, completedDrills, streak, lastDate, unlockedBadges]);
+
+      // Splash → skip name screen for returning players
+      useEffect(() => {
+        if (screen === "splash") {
+          const t = setTimeout(() => {
+            if (hasReturning && saved?.avatar) setScreen("app");
+            else if (hasReturning) setScreen("avatar");
+            else setScreen("name");
+          }, 1800);
+          return () => clearTimeout(t);
+        }
+      }, [screen]);
+
+      useEffect(() => {
+        const state = { xp, completedDrills, streak };
+        const nb = BADGES.filter(b => b.req(state) && !unlockedBadges.includes(b.id));
+        if (nb.length > 0) { setUnlockedBadges(prev => [...prev, ...nb.map(b => b.id)]); setNewBadge(nb[0]); setTimeout(() => setNewBadge(null), 2500); }
+      }, [xp, completedDrills, streak]);
+
+      useEffect(() => {
+        const u = [{ xp: 0, cat: "Ball Mastery" }, { xp: 0, cat: "Fitness" }, { xp: 50, cat: "Dribbling" }, { xp: 50, cat: "First Touch" }, { xp: 150, cat: "Passing" }, { xp: 300, cat: "Shooting" }, { xp: 500, cat: "Tricks" }];
+        setSkillTreeUnlocked(u.filter(x => xp >= x.xp).map(x => x.cat));
+      }, [xp]);
+
+      const completeDrill = useCallback((drill) => {
+        if (completedDrills.includes(drill.id)) return;
+        const prev = getLevel(xp);
+        const today = getToday();
+        setXP(p => p + drill.xp);
+        setCompletedDrills(p => [...p, drill.id]);
+        // Update streak based on last practice date
+        if (lastDate !== today) {
+          setStreak(s => lastDate ? calcStreak(lastDate, s) : 1);
+          setLastDate(today);
+        }
+        playGoal();
+        setShowComplete(true);
+        setTimeout(() => setShowComplete(false), 3000);
+        if (getLevel(xp + drill.xp).name !== prev.name) { setShowLevelUp(true); setTimeout(() => setShowLevelUp(false), 2500); }
+      }, [xp, completedDrills, lastDate]);
+
+      const font = "'SF Pro Display', 'SF Pro', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+
+      // ─── SPLASH ────────────────────────────────────
+      if (screen === "splash") {
+        return (
+          <div style={{ height: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: WHITE, fontFamily: font }}>
+            <div style={{ animation: "fadeIn 0.8s ease" }}>
+              <Icon name="ball" size={56} color={ACCENT} sw={1.2} />
+            </div>
+            <h1 style={{ fontSize: 32, fontWeight: 700, color: ACCENT, margin: "20px 0 0", letterSpacing: -1 }}>Drills Quest</h1>
+            <p style={{ fontSize: 13, color: GRAY, marginTop: 6, fontWeight: 500, letterSpacing: 2, textTransform: "uppercase" }}>Level up your game</p>
+            <style>{`@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }`}</style>
+          </div>
+        );
+      }
+
+      // ─── NAME ──────────────────────────────────────────
+      if (screen === "name") {
+        return (
+          <div style={{ height: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 32, background: WHITE, fontFamily: font }}>
+            <div style={{ marginBottom: 32 }}><Icon name="ball" size={40} color={ACCENT} sw={1.2} /></div>
+            <h1 style={{ fontSize: 24, fontWeight: 700, color: ACCENT, margin: "0 0 32px", letterSpacing: -0.5 }}>What's your name?</h1>
+            <input
+              type="text" value={nameInput} onChange={(e) => setNameInput(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter" && nameInput.trim()) { setPlayerName(nameInput.trim()); setScreen("avatar"); } }}
+              placeholder="Player name"
+              style={{ width: "100%", maxWidth: 260, padding: "16px 0", fontSize: 20, fontWeight: 600, fontFamily: font, border: "none", borderBottom: `2px solid ${BORDER}`, background: "transparent", color: ACCENT, outline: "none", textAlign: "center", transition: "border-color 0.2s" }}
+              onFocus={(e) => e.target.style.borderBottomColor = ACCENT}
+              onBlur={(e) => e.target.style.borderBottomColor = BORDER}
+              autoFocus
+            />
+            <button
+              onClick={() => { if (nameInput.trim()) { setPlayerName(nameInput.trim()); setScreen("avatar"); } }}
+              disabled={!nameInput.trim()}
+              style={{ marginTop: 40, padding: "14px 48px", fontSize: 15, fontWeight: 600, fontFamily: font, borderRadius: 100, border: "none", cursor: nameInput.trim() ? "pointer" : "default", background: nameInput.trim() ? ACCENT : BORDER, color: WHITE, transition: "all 0.3s", letterSpacing: 0.3 }}
+            >
+              Start Training
+            </button>
+          </div>
+        );
+      }
+
+      // ─── AVATAR SELECTION ───────────────────────────────
+      const teamData = team ? TEAMS.find(t => t.id === team) : null;
+      if (screen === "avatar") {
+        return (
+          <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", padding: "40px 24px", background: WHITE, fontFamily: font, overflowY: "auto" }}>
+            <div style={{ marginBottom: 16 }}><Icon name="ball" size={32} color={ACCENT} sw={1.2} /></div>
+            <h1 style={{ fontSize: 24, fontWeight: 700, color: ACCENT, margin: "0 0 6px", letterSpacing: -0.5 }}>Pick your player</h1>
+            <p style={{ fontSize: 13, color: GRAY, margin: "0 0 24px" }}>Choose your avatar</p>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 28, maxWidth: 280, width: "100%" }}>
+              {AVATAR_IDS.map(id => (
+                <div key={id} onClick={() => { playClick(); setAvatar(id); }} style={{
+                  height: 72, borderRadius: 14, border: `2px solid ${avatar === id ? ACCENT : BORDER}`,
+                  background: avatar === id ? LIGHT : WHITE,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  cursor: "pointer", transition: "all 0.2s",
+                  boxShadow: avatar === id ? `0 0 0 3px rgba(45,45,45,0.12)` : 'none',
+                }}>
+                  <PixelAvatar id={id} size={40} jersey={teamData?.primary} stripe={teamData?.secondary} />
+                </div>
+              ))}
+            </div>
+
+            <p style={{ fontSize: 13, color: GRAY, margin: "0 0 16px", fontWeight: 600, textTransform: "uppercase", letterSpacing: 1 }}>Pick your team</p>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, marginBottom: 32, maxWidth: 320, width: "100%" }}>
+              {TEAMS.map(t => (
+                <div key={t.id} onClick={() => { playClick(); setTeam(t.id); }} style={{
+                  padding: "8px 4px", borderRadius: 10, cursor: "pointer", textAlign: "center",
+                  border: `2px solid ${team === t.id ? ACCENT : BORDER}`,
+                  background: team === t.id ? LIGHT : WHITE, transition: "all 0.2s",
+                }}>
+                  <div style={{ display: "flex", justifyContent: "center", gap: 2, marginBottom: 4 }}>
+                    <div style={{ width: 14, height: 20, borderRadius: 2, background: t.primary }} />
+                    <div style={{ width: 14, height: 20, borderRadius: 2, background: t.secondary }} />
+                  </div>
+                  <span style={{ fontSize: 10, fontWeight: 600, color: ACCENT, lineHeight: 1 }}>{t.name}</span>
+                </div>
+              ))}
+            </div>
+
+            <button
+              onClick={() => { if (avatar && team) setScreen("app"); }}
+              disabled={!avatar || !team}
+              style={{ padding: "14px 48px", fontSize: 15, fontWeight: 600, fontFamily: font, borderRadius: 100, border: "none", cursor: avatar && team ? "pointer" : "default", background: avatar && team ? ACCENT : BORDER, color: WHITE, transition: "all 0.3s", letterSpacing: 0.3 }}
+            >
+              Let's go!
+            </button>
+          </div>
+        );
+      }
+
+      // ─── MAIN APP ──────────────────────────────────────
+      const level = getLevel(xp);
+      const nextLevel = getNextLevel(xp);
+      const progress = getLevelProgress(xp);
+      const filteredDrills = DRILLS.filter(d => {
+        if (categoryFilter !== "All" && d.category !== categoryFilter) return false;
+        if (d.setting !== settingFilter.toLowerCase()) return false;
+        return true;
+      });
+
+      const Pill = ({ active, children, onClick, color }) => {
+        const c = color || ACCENT;
+        return (
+          <button className="pill" onClick={onClick} style={{ padding: "7px 16px", borderRadius: 100, border: `1px solid ${active ? c : BORDER}`, background: active ? c : WHITE, color: active ? WHITE : GRAY, fontSize: 12, fontWeight: 600, fontFamily: font, cursor: "pointer", whiteSpace: "nowrap", transition: "all 0.2s", letterSpacing: 0.2 }}>
+            {children}
+          </button>
+        );
+      };
+
+      return (
+        <div style={{ minHeight: "100vh", background: BG, fontFamily: font, maxWidth: 540, margin: "0 auto", position: "relative", paddingBottom: 80 }}>
+
+          {/* Avatar + name — top right corner */}
+          {!selectedDrill && avatar && (
+            <div onClick={() => { playClick(); setTab("profile"); }} style={{ position: "absolute", top: 10, right: 16, zIndex: 50, cursor: "pointer", display: "flex", alignItems: "center", gap: 8, padding: "4px 12px 4px 4px", borderRadius: 100, background: WHITE, border: `1px solid ${BORDER}`, boxShadow: "0 1px 4px rgba(0,0,0,0.08)" }}>
+              <div style={{ width: 32, height: 32, borderRadius: 16, background: LIGHT, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+                <PixelAvatar id={avatar} size={24} jersey={teamData?.primary} stripe={teamData?.secondary} />
+              </div>
+              <span style={{ fontSize: 12, fontWeight: 600, color: ACCENT }}>{playerName}</span>
+            </div>
+          )}
+
+          {/* GOOOOOL! celebration */}
+          {showComplete && (
+            <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.85)", zIndex: 999, animation: "fadeIn 0.3s ease" }}>
+              <div style={{ textAlign: "center" }}>
+                <div style={{ width: 80, height: 80, borderRadius: 40, background: GREEN, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px", boxShadow: "0 0 40px rgba(52,199,89,0.5)" }}>
+                  <Icon name="check" size={40} color={WHITE} sw={2.5} />
+                </div>
+                <p style={{ fontSize: 36, fontWeight: 800, color: WHITE, letterSpacing: 4, margin: "0 0 8px", textTransform: "uppercase" }}>GOOOOOL!</p>
+                <p style={{ fontSize: 14, fontWeight: 500, color: "rgba(255,255,255,0.7)" }}>Drill complete! +{selectedDrill?.xp || 0} XP</p>
+              </div>
+            </div>
+          )}
+
+          {/* Level up */}
+          {showLevelUp && (
+            <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(255,255,255,0.95)", zIndex: 1000, animation: "fadeIn 0.3s ease" }}>
+              <div style={{ textAlign: "center", padding: 40 }}>
+                <Icon name="zap" size={48} color={ACCENT} />
+                <h2 style={{ fontSize: 28, fontWeight: 700, color: ACCENT, margin: "16px 0 4px", letterSpacing: -0.5 }}>Level Up</h2>
+                <p style={{ fontSize: 18, fontWeight: 500, color: GRAY }}>{level.name}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Badge toast */}
+          {newBadge && !showLevelUp && !showComplete && (
+            <div style={{ position: "fixed", top: 16, left: "50%", transform: "translateX(-50%)", background: ACCENT, color: WHITE, padding: "10px 24px", borderRadius: 100, zIndex: 1000, display: "flex", alignItems: "center", gap: 10, boxShadow: "0 4px 24px rgba(0,0,0,0.12)", animation: "slideDown 0.4s ease" }}>
+              <Icon name="trophy" size={18} color={WHITE} sw={1.5} />
+              <span style={{ fontSize: 13, fontWeight: 600 }}>{newBadge.name} unlocked</span>
+            </div>
+          )}
+
+          {/* Locked drill toast */}
+          {lockedMsg && (
+            <div style={{ position: "fixed", top: 16, left: "50%", transform: "translateX(-50%)", background: ACCENT, color: WHITE, padding: "10px 24px", borderRadius: 100, zIndex: 1000, display: "flex", alignItems: "center", gap: 10, boxShadow: "0 4px 24px rgba(0,0,0,0.12)", animation: "slideDown 0.4s ease", maxWidth: "90%", textAlign: "center" }}>
+              <Icon name="lock" size={16} color={WHITE} sw={1.5} />
+              <span style={{ fontSize: 13, fontWeight: 600 }}>{lockedMsg}</span>
+            </div>
+          )}
+
+          {/* ─── DRILL DETAIL ─── */}
+          {selectedDrill ? (
+            <div style={{ padding: "16px 20px" }}>
+              <button onClick={() => setSelectedDrill(null)} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, padding: "12px 0", color: GRAY, fontSize: 14, fontWeight: 500, fontFamily: font }}>
+                <Icon name="back" size={18} color={GRAY} /> Back
+              </button>
+
+              <div style={{ background: WHITE, borderRadius: 16, overflow: "hidden", border: `1px solid ${BORDER}`, borderLeft: `3px solid ${getCatColor(selectedDrill.category).primary}` }}>
+                {/* Header */}
+                <div style={{ padding: "28px 24px 24px", borderBottom: `1px solid ${BORDER}` }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: getCatColor(selectedDrill.category).primary, letterSpacing: 0.5, textTransform: "uppercase" }}>{selectedDrill.category}</span>
+                    <span style={{ width: 3, height: 3, borderRadius: 2, background: BORDER }} />
+                    <span style={{ fontSize: 12, color: GRAY }}>{selectedDrill.setting}</span>
+                  </div>
+                  <h2 style={{ fontSize: 28, fontWeight: 700, color: ACCENT, margin: 0, letterSpacing: -0.5 }}>{selectedDrill.name}</h2>
+                  <p style={{ fontSize: 15, color: GRAY, marginTop: 8, lineHeight: 1.5 }}>{selectedDrill.desc}</p>
+                  <div style={{ display: "flex", gap: 20, marginTop: 16, fontSize: 13, color: GRAY }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 5 }}><Icon name="clock" size={14} color={GRAY} /> {selectedDrill.duration}</div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                      {[1,2,3].map(i => <div key={i} style={{ width: 6, height: 6, borderRadius: 3, background: i <= selectedDrill.difficulty ? ACCENT : BORDER }} />)}
+                    </div>
+                    <div style={{ fontWeight: 600 }}>+{selectedDrill.xp} XP</div>
+                  </div>
+                </div>
+
+                {/* Steps */}
+                <div style={{ padding: 24 }}>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 24 }}>
+                    {selectedDrill.equipment.map((e, i) => <span key={i} style={{ padding: "5px 12px", borderRadius: 100, border: `1px solid ${BORDER}`, fontSize: 12, color: GRAY, fontWeight: 500 }}>{e}</span>)}
+                  </div>
+
+                  {selectedDrill.steps.map((step, i) => (
+                    <div key={i} style={{ display: "flex", gap: 14, marginBottom: 16, alignItems: "flex-start" }}>
+                      <div style={{ width: 24, height: 24, borderRadius: 12, border: `1.5px solid ${BORDER}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 600, color: GRAY, flexShrink: 0 }}>{i + 1}</div>
+                      <p style={{ margin: 0, color: ACCENT, lineHeight: 1.5, fontSize: 14, paddingTop: 2 }}>{step}</p>
+                    </div>
+                  ))}
+
+                  {/* Tip */}
+                  <div style={{ background: LIGHT, borderRadius: 12, padding: "14px 16px", marginTop: 8, marginBottom: 24 }}>
+                    <p style={{ margin: 0, color: GRAY, fontSize: 13, lineHeight: 1.5, fontStyle: "italic" }}>{selectedDrill.tips}</p>
+                  </div>
+
+                  {/* Video Tutorial */}
+                  {DRILL_VIDEO_IDS[selectedDrill.id] ? (
+                    <div style={{ marginBottom: 16 }}>
+                      <p style={{ fontSize: 12, fontWeight: 600, color: GRAY, textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 }}>Watch & Learn</p>
+                      <div style={{ position: "relative", width: "100%", paddingBottom: "56.25%", borderRadius: 12, overflow: "hidden", background: "#000" }}>
+                        <iframe
+                          src={`https://www.youtube-nocookie.com/embed/${DRILL_VIDEO_IDS[selectedDrill.id]}?rel=0&modestbranding=1&playsinline=1&iv_load_policy=3&disablekb=0&fs=1&autoplay=0`}
+                          style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", border: "none" }}
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                          title={`${selectedDrill.name} tutorial`}
+                        />
+                      </div>
+                      <a href={`https://www.youtube.com/watch?v=${DRILL_VIDEO_IDS[selectedDrill.id]}`} target="_blank" rel="noopener noreferrer" style={{ display: "block", textAlign: "center", fontSize: 12, color: BLUE, marginTop: 8, textDecoration: "none" }}>Video not loading? Watch on YouTube</a>
+                    </div>
+                  ) : (
+                    <div style={{
+                      display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
+                      width: "100%", padding: 14, borderRadius: 14,
+                      background: LIGHT, marginBottom: 12,
+                    }}>
+                      <Icon name="play" size={16} color={GRAY} />
+                      <span style={{ fontSize: 13, fontWeight: 500, color: GRAY }}>Follow the steps above to master this drill!</span>
+                    </div>
+                  )}
+
+                  {/* Complete */}
+                  <button
+                    onClick={() => completeDrill(selectedDrill)}
+                    disabled={completedDrills.includes(selectedDrill.id)}
+                    style={{
+                      width: "100%", padding: 16, fontSize: 15, fontWeight: 600, fontFamily: font,
+                      borderRadius: 14, border: "none",
+                      cursor: completedDrills.includes(selectedDrill.id) ? "default" : "pointer",
+                      background: completedDrills.includes(selectedDrill.id) ? LIGHT : ACCENT,
+                      color: completedDrills.includes(selectedDrill.id) ? GRAY : WHITE,
+                      transition: "all 0.2s",
+                    }}
+                  >
+                    {completedDrills.includes(selectedDrill.id) ? "Completed" : `Complete  +${selectedDrill.xp} XP`}
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <>
+              {/* ─── HOME ─── */}
+              {tab === "home" && (
+                <div>
+                  <ColorBand tab="home" />
+                  <div style={{ padding: "0 20px 16px" }}>
+                  {/* Header */}
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 28, paddingTop: 8 }}>
+                    <div>
+                      <p style={{ margin: 0, fontSize: 13, color: GRAY, fontWeight: 500 }}>Welcome back</p>
+                      <h1 style={{ margin: "2px 0 0", fontSize: 28, fontWeight: 700, color: ACCENT, letterSpacing: -0.5 }}>{playerName}</h1>
+                    </div>
+                    <div style={{ textAlign: "right" }}>
+                      <p style={{ margin: 0, fontSize: 20, fontWeight: 700, color: ACCENT }}>{xp}</p>
+                      <p style={{ margin: 0, fontSize: 11, color: GRAY, fontWeight: 500, textTransform: "uppercase", letterSpacing: 1 }}>{level.name}</p>
+                    </div>
+                  </div>
+
+                  {/* XP Progress */}
+                  <div style={{ marginBottom: 28 }}>
+                    <div style={{ background: BORDER, borderRadius: 4, height: 4, overflow: "hidden" }}>
+                      <div style={{ height: "100%", borderRadius: 4, background: ACCENT, transition: "width 0.5s ease", width: `${progress}%` }} />
+                    </div>
+                    {nextLevel && <p style={{ fontSize: 11, color: GRAY, marginTop: 6, textAlign: "right" }}>{nextLevel.minXP - xp} XP to {nextLevel.name}</p>}
+                  </div>
+
+                  {/* Stats row */}
+                  <div style={{ display: "flex", gap: 12, marginBottom: 32 }}>
+                    {[
+                      { label: "Streak", value: streak, icon: "fire", color: "#E63946" },
+                      { label: "Drills", value: completedDrills.length, icon: "ball", color: "#034694" },
+                      { label: "Badges", value: unlockedBadges.length, icon: "trophy", color: "#FFDF00" },
+                    ].map((s, i) => (
+                      <div key={i} style={{ flex: 1, background: WHITE, borderRadius: 14, padding: "18px 12px", textAlign: "center", border: `1px solid ${BORDER}`, borderTop: `3px solid ${s.color}` }}>
+                        <div style={{ marginBottom: 8, display: "flex", justifyContent: "center" }}><Icon name={s.icon} size={20} color={s.color} /></div>
+                        <div style={{ fontSize: 22, fontWeight: 700, color: ACCENT }}>{s.value}</div>
+                        <div style={{ fontSize: 11, color: GRAY, marginTop: 2, fontWeight: 500, letterSpacing: 0.5, textTransform: "uppercase" }}>{s.label}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Today's drill */}
+                  <p style={{ fontSize: 12, fontWeight: 600, color: GRAY, textTransform: "uppercase", letterSpacing: 1, marginBottom: 12 }}>Today's challenge</p>
+                  <div onClick={() => { playClick(); setSelectedDrill(dailyChallenge); }} style={{ background: WHITE, borderRadius: 16, padding: 20, cursor: "pointer", border: `1px solid ${BORDER}`, marginBottom: 32, display: "flex", alignItems: "center", gap: 16 }}>
+                    <div style={{ width: 48, height: 48, borderRadius: 24, background: getCatColor(dailyChallenge.category).primary + '18', display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <Icon name={CAT_ICONS[dailyChallenge.category] || "ball"} size={24} color={getCatColor(dailyChallenge.category).dark} />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <h4 style={{ margin: 0, fontSize: 16, fontWeight: 600, color: ACCENT }}>{dailyChallenge.name}</h4>
+                      <p style={{ margin: "4px 0 0", fontSize: 12, color: GRAY }}>{dailyChallenge.duration} · +{dailyChallenge.xp} XP</p>
+                    </div>
+                    <Icon name="arrow" size={18} color={BORDER} />
+                  </div>
+
+                  {/* Quick access */}
+                  <p style={{ fontSize: 12, fontWeight: 600, color: GRAY, textTransform: "uppercase", letterSpacing: 1, marginBottom: 12 }}>Quick start</p>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 32 }}>
+                    {[
+                      { label: "Indoor", icon: "indoor", color: "#6CACE4", action: () => { playClick(); setSettingFilter("Indoor"); setCategoryFilter("All"); setTab("drills"); } },
+                      { label: "Outdoor", icon: "outdoor", color: "#00843D", action: () => { playClick(); setSettingFilter("Outdoor"); setCategoryFilter("All"); setTab("drills"); } },
+                      { label: "Tricks", icon: "cat_tricks", color: "#7B2D8E", action: () => { playClick(); setCategoryFilter("Tricks"); setTab("drills"); } },
+                      { label: "Ball Mastery", icon: "cat_mastery", color: "#FFDF00", action: () => { playClick(); setCategoryFilter("Ball Mastery"); setTab("drills"); } },
+                    ].map((item, i) => (
+                      <div key={i} onClick={item.action} style={{ background: WHITE, borderRadius: 14, padding: "20px 16px", cursor: "pointer", border: `1px solid ${BORDER}`, borderBottom: `3px solid ${item.color}`, display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
+                        <Icon name={item.icon} size={28} color={item.color} />
+                        <span style={{ fontSize: 13, fontWeight: 600, color: ACCENT }}>{item.label}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                </div>
+                </div>
+              )}
+
+              {/* ─── DRILLS ─── */}
+              {tab === "drills" && (
+                <div>
+                  <ColorBand tab="drills" />
+                  <div style={{ padding: "0 20px 16px" }}>
+                  <button className="pill" onClick={() => { playClick(); setTab("home"); }} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, padding: "10px 0 0", color: GRAY, fontSize: 13, fontWeight: 500, fontFamily: font }}><Icon name="back" size={14} color={GRAY} sw={2} /> Home</button>
+                  <h2 style={{ fontSize: 28, fontWeight: 700, color: ACCENT, margin: "4px 0 4px", letterSpacing: -0.5 }}>Drills</h2>
+                  <p style={{ color: GRAY, fontSize: 13, margin: "0 0 20px" }}>{completedDrills.length} of {DRILLS.length} completed</p>
+
+                  <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>
+                    {["Indoor", "Outdoor"].map(s => <Pill key={s} active={settingFilter === s} onClick={() => { playClick(); setSettingFilter(s); }}>{s}</Pill>)}
+                  </div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 20 }}>
+                    {CATEGORIES.map(c => <Pill key={c} active={categoryFilter === c} onClick={() => { playClick(); setCategoryFilter(c); }} color={c === "All" ? ACCENT : getCatColor(c).primary}>{c}</Pill>)}
+                  </div>
+
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    {[...filteredDrills].sort((a, b) => {
+                      const aLocked = !skillTreeUnlocked.includes(a.category) ? 1 : 0;
+                      const bLocked = !skillTreeUnlocked.includes(b.category) ? 1 : 0;
+                      return aLocked - bLocked;
+                    }).map(drill => {
+                      const done = completedDrills.includes(drill.id);
+                      const locked = !skillTreeUnlocked.includes(drill.category);
+                      const catColor = getCatColor(drill.category);
+                      const unlockXP = [{ xp: 0, cat: "Ball Mastery" }, { xp: 0, cat: "Fitness" }, { xp: 50, cat: "Dribbling" }, { xp: 50, cat: "First Touch" }, { xp: 150, cat: "Passing" }, { xp: 300, cat: "Shooting" }, { xp: 500, cat: "Tricks" }].find(u => u.cat === drill.category)?.xp || 0;
+                      return (
+                        <div key={drill.id} onClick={() => {
+                          playClick();
+                          if (locked) { setLockedMsg(`Complete more drills to unlock ${drill.category}! (${unlockXP} XP needed)`); setTimeout(() => setLockedMsg(null), 2200); }
+                          else setSelectedDrill(drill);
+                        }} style={{
+                          background: WHITE, borderRadius: 14, padding: "14px 16px",
+                          cursor: "pointer",
+                          border: `1px solid ${done ? GREEN : BORDER}`,
+                          opacity: locked ? 0.45 : 1,
+                          display: "flex", gap: 14, alignItems: "center",
+                          transition: "all 0.15s",
+                        }}>
+                          <div style={{ width: 40, height: 40, borderRadius: 12, background: done ? `${GREEN}12` : locked ? LIGHT : catColor.primary + '18', display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                            {locked ? <Icon name="lock" size={18} color={GRAY} /> : done ? <Icon name="check" size={18} color={GREEN} /> : <Icon name={CAT_ICONS[drill.category] || "ball"} size={20} color={catColor.dark} />}
+                          </div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <h4 style={{ margin: 0, fontSize: 15, fontWeight: 600, color: ACCENT }}>{drill.name}</h4>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 3 }}>
+                              <span style={{ fontSize: 11, color: GRAY }}>{drill.duration}</span>
+                              <div style={{ display: "flex", gap: 2 }}>{[1,2,3].map(i => <div key={i} style={{ width: 4, height: 4, borderRadius: 2, background: i <= drill.difficulty ? ACCENT : BORDER }} />)}</div>
+                              <span style={{ fontSize: 11, color: GRAY }}>{drill.setting}</span>
+                            </div>
+                          </div>
+                          <span style={{ fontSize: 13, fontWeight: 600, color: done ? GREEN : GRAY }}>+{drill.xp}</span>
+                        </div>
+                      );
+                    })}
+                    {filteredDrills.length === 0 && (
+                      <div style={{ textAlign: "center", padding: "40px 20px" }}>
+                        <Icon name="ball" size={32} color={BORDER} />
+                        <p style={{ fontSize: 14, color: GRAY, marginTop: 12 }}>No {categoryFilter !== "All" ? categoryFilter + " " : ""}drills for {settingFilter.toLowerCase()}.</p>
+                        <button onClick={() => setSettingFilter(settingFilter === "Indoor" ? "Outdoor" : "Indoor")} style={{ marginTop: 8, padding: "8px 20px", borderRadius: 100, border: `1px solid ${BORDER}`, background: WHITE, color: ACCENT, fontSize: 13, fontWeight: 600, fontFamily: font, cursor: "pointer" }}>Try {settingFilter === "Indoor" ? "outdoor" : "indoor"}</button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                </div>
+              )}
+
+              {/* ─── SKILL TREE ─── */}
+              {tab === "skills" && (
+                <div>
+                  <ColorBand tab="skills" />
+                  <div style={{ padding: "0 20px 16px" }}>
+                  <button className="pill" onClick={() => { playClick(); setTab("home"); }} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, padding: "10px 0 0", color: GRAY, fontSize: 13, fontWeight: 500, fontFamily: font }}><Icon name="back" size={14} color={GRAY} sw={2} /> Home</button>
+                  <h2 style={{ fontSize: 28, fontWeight: 700, color: ACCENT, margin: "4px 0 4px", letterSpacing: -0.5 }}>Skills</h2>
+                  <p style={{ color: GRAY, fontSize: 13, margin: "0 0 24px" }}>Earn XP to unlock new categories</p>
+
+                  <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+                    {[
+                      { cat: "Ball Mastery", unlockXP: 0, desc: "Foundation" },
+                      { cat: "Fitness", unlockXP: 0, desc: "Speed & agility" },
+                      { cat: "Dribbling", unlockXP: 50, desc: "Move with the ball" },
+                      { cat: "First Touch", unlockXP: 50, desc: "Control every pass" },
+                      { cat: "Passing", unlockXP: 150, desc: "Connect the play" },
+                      { cat: "Shooting", unlockXP: 300, desc: "Find the net" },
+                      { cat: "Tricks", unlockXP: 500, desc: "Showtime" },
+                    ].map((node, i) => {
+                      const unlocked = skillTreeUnlocked.includes(node.cat);
+                      const catColor = getCatColor(node.cat);
+                      const drillsInCat = DRILLS.filter(d => d.category === node.cat);
+                      const completedInCat = drillsInCat.filter(d => completedDrills.includes(d.id)).length;
+                      const pct = drillsInCat.length > 0 ? Math.round((completedInCat / drillsInCat.length) * 100) : 0;
+                      return (
+                        <div key={node.cat}>
+                          {i > 0 && <div style={{ width: 1, height: 20, margin: "0 auto", background: unlocked ? catColor.primary : BORDER }} />}
+                          <div style={{ background: WHITE, borderRadius: 14, padding: "16px 18px", border: `1px solid ${pct === 100 && unlocked ? GREEN : BORDER}`, opacity: unlocked ? 1 : 0.4 }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                              <div style={{ width: 44, height: 44, borderRadius: 22, background: pct === 100 ? `${GREEN}12` : unlocked ? catColor.primary + '18' : LIGHT, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                {unlocked ? <Icon name={CAT_ICONS[node.cat] || "ball"} size={22} color={pct === 100 ? GREEN : catColor.primary} /> : <Icon name="lock" size={18} color={GRAY} />}
+                              </div>
+                              <div style={{ flex: 1 }}>
+                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                  <h4 style={{ margin: 0, fontSize: 15, fontWeight: 600, color: ACCENT }}>{node.cat}</h4>
+                                  {!unlocked && <span style={{ fontSize: 11, color: GRAY, fontWeight: 500 }}>{node.unlockXP} XP</span>}
+                                  {unlocked && <span style={{ fontSize: 11, color: GRAY }}>{completedInCat}/{drillsInCat.length}</span>}
+                                </div>
+                                <p style={{ margin: "2px 0 0", fontSize: 12, color: GRAY }}>{node.desc}</p>
+                                {unlocked && (
+                                  <div style={{ marginTop: 8, background: LIGHT, borderRadius: 3, height: 3, overflow: "hidden" }}>
+                                    <div style={{ height: "100%", borderRadius: 3, background: pct === 100 ? GREEN : catColor.primary, width: `${pct}%`, transition: "width 0.5s" }} />
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+                </div>
+              )}
+
+              {/* ─── BADGES ─── */}
+              {tab === "badges" && (
+                <div>
+                  <ColorBand tab="badges" />
+                  <div style={{ padding: "0 20px 16px" }}>
+                  <button className="pill" onClick={() => { playClick(); setTab("home"); }} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, padding: "10px 0 0", color: GRAY, fontSize: 13, fontWeight: 500, fontFamily: font }}><Icon name="back" size={14} color={GRAY} sw={2} /> Home</button>
+                  <h2 style={{ fontSize: 28, fontWeight: 700, color: ACCENT, margin: "4px 0 4px", letterSpacing: -0.5 }}>Badges</h2>
+                  <p style={{ color: GRAY, fontSize: 13, margin: "0 0 24px" }}>{unlockedBadges.length} of {BADGES.length} earned</p>
+
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                    {BADGES.map(badge => {
+                      const earned = unlockedBadges.includes(badge.id);
+                      return (
+                        <div key={badge.id} style={{
+                          background: WHITE, borderRadius: 14, padding: "20px 16px", textAlign: "center",
+                          border: `1px solid ${earned ? GREEN : BORDER}`,
+                          opacity: earned ? 1 : 0.35,
+                        }}>
+                          <div style={{ width: 40, height: 40, borderRadius: 20, background: earned ? `${GREEN}12` : LIGHT, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 10px" }}>
+                            <Icon name="trophy" size={20} color={earned ? GREEN : GRAY} />
+                          </div>
+                          <div style={{ fontSize: 13, fontWeight: 600, color: ACCENT }}>{badge.name}</div>
+                          <div style={{ fontSize: 11, color: GRAY, marginTop: 3 }}>{badge.desc}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+                </div>
+              )}
+
+              {/* ─── PROFILE ─── */}
+              {tab === "profile" && (
+                <div>
+                  <ColorBand tab="profile" />
+                  <div style={{ padding: "0 20px 16px" }}>
+                  <button className="pill" onClick={() => { playClick(); setTab("home"); }} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, padding: "10px 0 0", color: GRAY, fontSize: 13, fontWeight: 500, fontFamily: font }}><Icon name="back" size={14} color={GRAY} sw={2} /> Home</button>
+                  {/* Profile card */}
+                  <div style={{ background: WHITE, borderRadius: 16, padding: 28, textAlign: "center", border: `1px solid ${BORDER}`, marginTop: 8, marginBottom: 24 }}>
+                    <div style={{ width: 80, height: 80, borderRadius: 20, background: LIGHT, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px", overflow: "hidden" }}>
+                      {avatar ? <PixelAvatar id={avatar} size={56} jersey={teamData?.primary} stripe={teamData?.secondary} /> : <Icon name="user" size={28} color={ACCENT} />}
+                    </div>
+                    <h2 style={{ fontSize: 22, fontWeight: 700, color: ACCENT, margin: "0 0 4px" }}>{playerName}</h2>
+                    <span style={{ display: "inline-block", padding: "4px 14px", borderRadius: 100, background: LIGHT, fontSize: 12, fontWeight: 600, color: GRAY, letterSpacing: 0.5, textTransform: "uppercase" }}>{level.name}</span>
+                    <div style={{ marginTop: 16, fontSize: 36, fontWeight: 700, color: ACCENT }}>{xp} <span style={{ fontSize: 14, fontWeight: 500, color: GRAY }}>XP</span></div>
+                  </div>
+
+                  {/* Stats */}
+                  <p style={{ fontSize: 12, fontWeight: 600, color: GRAY, textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 }}>Stats</p>
+                  <div style={{ background: WHITE, borderRadius: 14, overflow: "hidden", border: `1px solid ${BORDER}`, marginBottom: 24 }}>
+                    {[
+                      { label: "Drills completed", value: `${completedDrills.length} / ${DRILLS.length}` },
+                      { label: "Badges earned", value: `${unlockedBadges.length} / ${BADGES.length}` },
+                      { label: "Practice streak", value: `${streak} day${streak !== 1 ? "s" : ""}` },
+                      { label: "Skills unlocked", value: `${skillTreeUnlocked.length} / 7` },
+                    ].map((stat, i) => (
+                      <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "14px 18px", borderBottom: i < 3 ? `1px solid ${BORDER}` : "none" }}>
+                        <span style={{ fontSize: 14, color: GRAY }}>{stat.label}</span>
+                        <span style={{ fontSize: 14, fontWeight: 600, color: ACCENT }}>{stat.value}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div style={{ textAlign: "center", marginTop: 8 }}>
+                    <button onClick={() => { setXP(0); setCompletedDrills([]); setStreak(1); setUnlockedBadges([]); setLastDate(null); setAvatar(null); setPlayerName(""); clearSave(); setScreen("name"); }} style={{ background: "none", border: `1px solid ${BORDER}`, borderRadius: 100, padding: "10px 28px", color: GRAY, fontSize: 13, fontWeight: 500, fontFamily: font, cursor: "pointer" }}>Reset progress</button>
+                  </div>
+                </div>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* ─── BOTTOM NAV ─── */}
+          {!selectedDrill && (
+            <div className="safe-bottom" style={{ position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 540, background: WHITE, borderTop: `1px solid ${BORDER}`, display: "flex", justifyContent: "space-around", padding: "6px 0 10px", zIndex: 100 }}>
+              {[
+                { id: "home", icon: "home", label: "Home" },
+                { id: "drills", icon: "grid", label: "Drills" },
+                { id: "skills", icon: "tree", label: "Skills" },
+                { id: "badges", icon: "trophy", label: "Badges" },
+                { id: "profile", icon: "user", label: "Profile" },
+              ].map(t => (
+                <button key={t.id} onClick={() => { playClick(); setTab(t.id); }} style={{
+                  background: "none", border: "none", cursor: "pointer",
+                  display: "flex", flexDirection: "column", alignItems: "center", gap: 3,
+                  padding: "6px 14px",
+                }}>
+                  <Icon name={t.icon} size={22} color={tab === t.id ? TAB_COLORS[t.id] : BORDER} sw={tab === t.id ? 1.8 : 1.5} />
+                  <span style={{ fontSize: 10, fontWeight: 600, color: tab === t.id ? TAB_COLORS[t.id] : GRAY, letterSpacing: 0.3 }}>{t.label}</span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          <style>{`
+            * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+            body { margin: 0; padding: 0; }
+            @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+            @keyframes slideDown { from { transform: translate(-50%, -120%); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
+            ::-webkit-scrollbar { display: none; }
+          `}</style>
+        </div>
+      );
+    }
+
+    // Render the app
+    ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(DrillsQuest));
+  </script>
+</body>
+</html>
