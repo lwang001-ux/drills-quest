@@ -75,6 +75,7 @@
         cat_shoot: <svg viewBox="0 0 48 48" style={{...s, width: size, height: size}}><rect x="8" y="8" width="32" height="24" rx="2" fill="none"/><path d="M8 8l16 12L40 8"/><circle cx="24" cy="40" r="4"/><path d="M24 36v-6" strokeDasharray="2 2"/></svg>,
         cat_tricks: <svg viewBox="0 0 48 48" style={{...s, width: size, height: size}}><circle cx="24" cy="32" r="6"/><path d="M18 16c0-4 2-8 6-8s6 4 6 8"/><path d="M14 22c2-2 6-4 10-4s8 2 10 4"/><path d="M24 26v-4"/></svg>,
         cat_fitness: <svg viewBox="0 0 48 48" style={{...s, width: size, height: size}}><path d="M12 20v16M36 20v16M8 24h8M32 24h8M20 22v12M28 22v12M20 28h8"/></svg>,
+        player: <svg viewBox="0 0 48 48" style={{...s, width: size, height: size}}><circle cx="22" cy="7" r="5"/><path d="M18 14h8l2 10-6 4-6-4zM20 28l-4 12M28 24l4 12M14 40h6M32 36h-4"/><circle cx="34" cy="22" r="5"/></svg>,
       };
       return icons[name] || null;
     };
@@ -482,7 +483,7 @@
       if (screen === "name") {
         return (
           <div style={{ height: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 32, background: WHITE, fontFamily: font }}>
-            <div style={{ marginBottom: 32 }}><Icon name="ball" size={40} color={ACCENT} sw={1.2} /></div>
+            <div style={{ marginBottom: 24 }}><Icon name="player" size={64} color={ACCENT} sw={2} /></div>
             <h1 style={{ fontSize: 24, fontWeight: 700, color: ACCENT, margin: "0 0 32px", letterSpacing: -0.5 }}>What's your name?</h1>
             <input
               type="text" value={nameInput} onChange={(e) => setNameInput(e.target.value)}
@@ -509,7 +510,7 @@
       if (screen === "avatar") {
         return (
           <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", padding: "40px 24px", background: WHITE, fontFamily: font, overflowY: "auto" }}>
-            <div style={{ marginBottom: 16 }}><Icon name="ball" size={32} color={ACCENT} sw={1.2} /></div>
+            <div style={{ marginBottom: 16 }}><Icon name="player" size={56} color={ACCENT} sw={2} /></div>
             <h1 style={{ fontSize: 24, fontWeight: 700, color: ACCENT, margin: "0 0 6px", letterSpacing: -0.5 }}>Pick your player</h1>
             <p style={{ fontSize: 13, color: GRAY, margin: "0 0 24px" }}>Choose your avatar</p>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 28, maxWidth: 280, width: "100%" }}>
