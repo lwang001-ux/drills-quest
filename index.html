@@ -66,12 +66,12 @@
         indoor: <svg viewBox="0 0 24 24" style={s}><path d="M3 10.5L12 3l9 7.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V10.5z"/></svg>,
         outdoor: <svg viewBox="0 0 24 24" style={s}><circle cx="12" cy="5" r="3"/><path d="M12 8v14M8 12l4-4 4 4M6 18l6-6 6 6"/></svg>,
         star: <svg viewBox="0 0 24 24" style={{...s, fill: color, stroke: "none"}}><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>,
-        fire: <svg viewBox="0 0 24 24" style={s}><path d="M12 22c4-2 8-6 8-12a8 8 0 00-8-8C8 2 8 6 8 8s-4 2-4 4c0 4 4 8 8 10z"/><path d="M12 22c-2-1-4-3-4-6 0-2 2-3 4-2s4 0 4-2c0-2-2-3-4-6"/></svg>,
+        fire: <svg viewBox="0 0 24 24" style={s}><path d="M12 22c-4 0-7-3-7-7 0-3 2-5 3-7l1-2c1 2 2 3 3 3 1 0 1-1 1-3 0-1 0-2 1-4 2 3 5 6 5 10 0 6-3 10-7 10z"/><path d="M12 22c-2 0-3.5-1.5-3.5-4 0-2 1.5-3 3.5-4 2 1 3.5 2 3.5 4S14 22 12 22z"/></svg>,
         target: <svg viewBox="0 0 24 24" style={s}><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>,
         play: <svg viewBox="0 0 24 24" style={{...s, fill: color, stroke: "none"}}><path d="M6 4l15 8-15 8V4z"/></svg>,
         external: <svg viewBox="0 0 24 24" style={s}><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>,
         // Category illustrations — soccer-themed line art
-        cat_mastery: <svg viewBox="0 0 48 48" style={{...s, width: size, height: size}}><circle cx="24" cy="32" r="10"/><path d="M24 22v-2M19 27l5 5 5-5"/><path d="M14 18l4 6M34 18l-4 6"/><path d="M18 14c2-2 4-3 6-3s4 1 6 3"/></svg>,
+        cat_mastery: <svg viewBox="0 0 48 48" style={{...s, width: size, height: size}}><circle cx="24" cy="34" r="10"/><path d="M24 34l4-3M24 34l-4-3M24 34v-5"/><path d="M14 22l6-2 4 4 4-4 6 2"/><path d="M20 20l4-8 4 8"/></svg>,
         cat_dribble: <svg viewBox="0 0 48 48" style={{...s, width: size, height: size}}><circle cx="36" cy="36" r="6"/><path d="M12 12c6 0 8 6 12 10s8 8 12 8"/><path d="M8 16l4-4M8 8l4 4" /><path d="M16 20l-2-3M22 26l-2-3"/></svg>,
         cat_touch: <svg viewBox="0 0 48 48" style={{...s, width: size, height: size}}><circle cx="30" cy="32" r="8"/><path d="M10 12l6 10 4-2"/><path d="M14 10c0-2 2-4 4-2l4 6"/><path d="M22 22l4 4"/><path d="M30 24v-6" strokeDasharray="2 3"/></svg>,
         cat_pass: <svg viewBox="0 0 48 48" style={{...s, width: size, height: size}}><circle cx="24" cy="24" r="6"/><path d="M6 32l10-6"/><path d="M42 32l-10-6"/><path d="M6 36l4-4M6 28l4 4M42 36l-4-4M42 28l-4 4"/></svg>,
@@ -317,7 +317,7 @@
     const BORDER = "#E5E5EA";
 
     const CATEGORY_COLORS = {
-      "Ball Mastery":  { primary: "#FFDF00", dark: "#B8A000" },
+      "Ball Mastery":  { primary: "#E8A817", dark: "#B07D0E" },
       "Dribbling":     { primary: "#E63946", dark: "#B22030" },
       "First Touch":   { primary: "#034694", dark: "#022D61" },
       "Passing":       { primary: "#00843D", dark: "#006230" },
@@ -330,7 +330,7 @@
     }
 
     const TAB_COLORS = {
-      home: "#FFDF00", drills: "#E63946", skills: "#034694", badges: "#7B2D8E", profile: "#FF6B00",
+      home: "#E8A817", drills: "#E63946", skills: "#034694", badges: "#7B2D8E", profile: "#FF6B00",
     };
 
     function getLevel(xp) { let lv = LEVELS[0]; for (const l of LEVELS) { if (xp >= l.minXP) lv = l; } return lv; }
@@ -749,7 +749,7 @@
                     {[
                       { label: "Streak", value: streak, icon: "fire", color: "#E63946" },
                       { label: "Drills", value: completedDrills.length, icon: "ball", color: "#034694" },
-                      { label: "Badges", value: unlockedBadges.length, icon: "trophy", color: "#FFDF00" },
+                      { label: "Badges", value: unlockedBadges.length, icon: "trophy", color: "#E8A817" },
                     ].map((s, i) => (
                       <div key={i} style={{ flex: 1, background: WHITE, borderRadius: 14, padding: "18px 12px", textAlign: "center", border: `1px solid ${BORDER}`, borderTop: `3px solid ${s.color}` }}>
                         <div style={{ marginBottom: 8, display: "flex", justifyContent: "center" }}><Icon name={s.icon} size={20} color={s.color} /></div>
@@ -779,7 +779,7 @@
                       { label: "Indoor", icon: "indoor", color: "#6CACE4", action: () => { playClick(); setSettingFilter("Indoor"); setCategoryFilter("All"); setTab("drills"); } },
                       { label: "Outdoor", icon: "outdoor", color: "#00843D", action: () => { playClick(); setSettingFilter("Outdoor"); setCategoryFilter("All"); setTab("drills"); } },
                       { label: "Tricks", icon: "cat_tricks", color: "#7B2D8E", action: () => { playClick(); setCategoryFilter("Tricks"); setTab("drills"); } },
-                      { label: "Ball Mastery", icon: "cat_mastery", color: "#FFDF00", action: () => { playClick(); setCategoryFilter("Ball Mastery"); setTab("drills"); } },
+                      { label: "Ball Mastery", icon: "cat_mastery", color: "#E8A817", action: () => { playClick(); setCategoryFilter("Ball Mastery"); setTab("drills"); } },
                     ].map((item, i) => (
                       <div key={i} onClick={item.action} style={{ background: WHITE, borderRadius: 14, padding: "20px 16px", cursor: "pointer", border: `1px solid ${BORDER}`, borderBottom: `3px solid ${item.color}`, display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
                         <Icon name={item.icon} size={28} color={item.color} />
