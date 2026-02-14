@@ -576,13 +576,12 @@
       return (
         <div style={{ minHeight: "100vh", background: BG, fontFamily: font, maxWidth: 540, margin: "0 auto", position: "relative", paddingBottom: 80 }}>
 
-          {/* Avatar + name — top right corner */}
+          {/* Avatar — top left corner on every page */}
           {!selectedDrill && avatar && (
-            <div onClick={() => { playClick(); setTab("profile"); }} style={{ position: "absolute", top: 10, right: 16, zIndex: 50, cursor: "pointer", display: "flex", alignItems: "center", gap: 8, padding: "4px 12px 4px 4px", borderRadius: 100, background: WHITE, border: `1px solid ${BORDER}`, boxShadow: "0 1px 4px rgba(0,0,0,0.08)" }}>
+            <div onClick={() => { playClick(); setTab("profile"); }} style={{ position: "absolute", top: 10, left: 16, zIndex: 50, cursor: "pointer", padding: 2, borderRadius: 18, background: WHITE, border: `1px solid ${BORDER}`, boxShadow: "0 1px 4px rgba(0,0,0,0.08)" }}>
               <div style={{ width: 32, height: 32, borderRadius: 16, background: LIGHT, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
                 <PixelAvatar id={avatar} size={24} jersey={teamData?.primary} stripe={teamData?.secondary} />
               </div>
-              <span style={{ fontSize: 12, fontWeight: 600, color: ACCENT }}>{playerName}</span>
             </div>
           )}
 
@@ -722,7 +721,16 @@
                   <ColorBand tab="home" />
                   <div style={{ padding: "0 20px 16px" }}>
                   {/* Header */}
-                  <div style={{ paddingTop: 44, marginBottom: 20 }} />
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 28, paddingTop: 44 }}>
+                    <div>
+                      <p style={{ margin: 0, fontSize: 13, color: GRAY, fontWeight: 500 }}>Welcome back</p>
+                      <h1 style={{ margin: "2px 0 0", fontSize: 28, fontWeight: 700, color: ACCENT, letterSpacing: -0.5 }}>{playerName}</h1>
+                    </div>
+                    <div style={{ textAlign: "right" }}>
+                      <p style={{ margin: 0, fontSize: 20, fontWeight: 700, color: ACCENT }}>{xp}</p>
+                      <p style={{ margin: 0, fontSize: 11, color: GRAY, fontWeight: 500, textTransform: "uppercase", letterSpacing: 1 }}>{level.name}</p>
+                    </div>
+                  </div>
 
                   {/* XP Progress */}
                   <div style={{ marginBottom: 28 }}>
