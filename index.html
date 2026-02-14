@@ -576,9 +576,9 @@
       return (
         <div style={{ minHeight: "100vh", background: BG, fontFamily: font, maxWidth: 540, margin: "0 auto", position: "relative", paddingBottom: 80 }}>
 
-          {/* Avatar — top left corner on every page */}
+          {/* Avatar — left on home, right on other pages */}
           {!selectedDrill && avatar && (
-            <div onClick={() => { playClick(); setTab("profile"); }} style={{ position: "absolute", top: 10, left: 16, zIndex: 50, cursor: "pointer", padding: 2, borderRadius: 18, background: WHITE, border: `1px solid ${BORDER}`, boxShadow: "0 1px 4px rgba(0,0,0,0.08)" }}>
+            <div onClick={() => { playClick(); setTab("profile"); }} style={{ position: "absolute", top: 10, zIndex: 50, cursor: "pointer", padding: 2, borderRadius: 18, background: WHITE, border: `1px solid ${BORDER}`, boxShadow: "0 1px 4px rgba(0,0,0,0.08)", ...(tab === "home" ? { left: 16 } : { right: 16 }) }}>
               <div style={{ width: 32, height: 32, borderRadius: 16, background: LIGHT, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
                 <PixelAvatar id={avatar} size={24} jersey={teamData?.primary} stripe={teamData?.secondary} />
               </div>
