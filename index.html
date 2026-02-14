@@ -11,10 +11,13 @@
   <title>Drills Quest - Level up your game</title>
 
   <!-- COPPA/FERPA Compliance: No third-party analytics, no cookies, no PII collection -->
-  <!-- All data stored locally in browser localStorage only -->
+  <!-- All data stored locally in browser localStorage only — never transmitted to any server -->
   <!-- YouTube embeds use youtube-nocookie.com (privacy-enhanced mode) -->
-  <!-- No external tracking scripts, no social media integrations -->
+  <!-- No external tracking scripts, no social media integrations, no ads -->
   <!-- Player name is stored locally only, never transmitted -->
+  <!-- No external links except YouTube drill videos (privacy-enhanced) -->
+  <meta name="rating" content="General">
+  <meta name="robots" content="noindex, nofollow">
 
   <style>
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -1010,8 +1013,9 @@
                     ))}
                   </div>
 
-                  <div style={{ textAlign: "center", marginTop: 8 }}>
-                    <button onClick={() => { setXP(0); setCompletedDrills([]); setStreak(1); setUnlockedBadges([]); setLastDate(null); setAvatar(null); setPlayerName(""); clearSave(); setScreen("name"); }} style={{ background: "none", border: `1px solid ${BORDER}`, borderRadius: 100, padding: "10px 28px", color: GRAY, fontSize: 13, fontWeight: 500, fontFamily: font, cursor: "pointer" }}>Reset progress</button>
+                  <div style={{ textAlign: "center", marginTop: 8, display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
+                    <button onClick={() => { playClick(); setScreen("splash"); }} style={{ width: 200, padding: "12px 28px", fontSize: 14, fontWeight: 600, fontFamily: font, borderRadius: 100, border: "none", cursor: "pointer", background: ACCENT, color: WHITE }}>Log Out</button>
+                    <button onClick={() => { if (window.confirm("Are you sure? This will delete ALL your progress, XP, and badges. This cannot be undone!")) { playClick(); setXP(0); setCompletedDrills([]); setStreak(1); setUnlockedBadges([]); setLastDate(null); setAvatar(null); setTeam(null); setPlayerName(""); setEditingAvatar(false); clearSave(); setScreen("name"); } }} style={{ background: "none", border: `1px solid ${BORDER}`, borderRadius: 100, padding: "10px 28px", color: GRAY, fontSize: 12, fontWeight: 500, fontFamily: font, cursor: "pointer" }}>Reset all progress</button>
                   </div>
                 </div>
                 </div>
